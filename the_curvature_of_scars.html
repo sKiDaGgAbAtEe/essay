@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Curvature of Scars</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #090b0f;
+    --surface: #0e1117;
+    --card: #131720;
+    --border: rgba(160, 200, 180, 0.11);
+    --sage: #7ab89a;
+    --sage-soft: rgba(122, 184, 154, 0.09);
+    --deep: #3a7f6a;
+    --deep-soft: rgba(58, 127, 106, 0.08);
+    --violet: #8c6aac;
+    --violet-soft: rgba(140, 106, 172, 0.10);
+    --ash: #6a7a72;
+    --text: #d4e0da;
+    --text-soft: #7a9088;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 19px;
+    line-height: 1.9;
+    overflow-x: hidden;
+  }
+
+  /* GRAIN OVERLAY */
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.65;
+  }
+
+  /* AMBIENT GLOW */
+  body::after {
+    content: '';
+    position: fixed; top: -180px; right: -180px;
+    width: 650px; height: 650px;
+    background: radial-gradient(circle, rgba(58,127,106,0.05) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* PROGRESS LINE */
+  .progress {
+    position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+    background: linear-gradient(90deg, var(--deep), var(--sage));
+    z-index: 1000; transition: width 0.1s linear;
+  }
+
+  /* SIDE NAV */
+  .sidenav {
+    position: fixed; right: 28px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 10px; z-index: 200;
+    opacity: 0; transition: opacity 0.5s;
+  }
+  .sidenav.show { opacity: 1; }
+  .sidenav-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border); border: 1px solid var(--sage);
+    cursor: pointer; transition: all 0.3s; position: relative;
+  }
+  .sidenav-dot.active { background: var(--deep); border-color: var(--deep); transform: scale(1.4); }
+  .sidenav-dot:hover::after {
+    content: attr(data-label);
+    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    white-space: nowrap; font-family: 'Source Serif 4', serif;
+    font-size: 11px; color: var(--sage); opacity: 0.8;
+    pointer-events: none;
+  }
+
+  /* LAYOUT */
+  .container {
+    position: relative; z-index: 1;
+    max-width: 760px; margin: 0 auto;
+    padding: 0 40px 140px;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-eyebrow {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.75em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--deep);
+    margin-bottom: 32px;
+    opacity: 0.9;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2.6em, 6.5vw, 4.8em);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 30px;
+    letter-spacing: -0.01em;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--sage);
+  }
+
+  .hero-subhead {
+    font-size: 1.05em;
+    color: var(--text-soft);
+    max-width: 580px;
+    line-height: 1.75;
+    font-style: italic;
+    margin-bottom: 50px;
+  }
+
+  .hero-line {
+    width: 80px; height: 1px;
+    background: linear-gradient(90deg, var(--sage), transparent);
+    margin-bottom: 30px;
+  }
+
+  .hero-author {
+    font-size: 0.82em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ash);
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 90px 0 30px;
+    border-bottom: 1px solid var(--border);
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  section.visible { opacity: 1; transform: none; }
+
+  .section-label {
+    font-size: 0.72em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--deep);
+    margin-bottom: 12px;
+    font-family: 'Source Serif 4', serif;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.7em, 3.8vw, 2.5em);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 36px;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.3em;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--sage);
+    margin-top: 52px;
+    margin-bottom: 20px;
+  }
+
+  p { margin-bottom: 22px; color: var(--text); }
+  p + p { margin-top: -4px; }
+  strong { color: var(--sage); font-weight: 600; }
+
+  /* PULL QUOTE */
+  .pull {
+    border-left: 3px solid var(--sage);
+    margin: 44px 0;
+    padding: 20px 30px;
+    background: var(--sage-soft);
+    border-radius: 0 6px 6px 0;
+  }
+  .pull p {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.22em;
+    font-style: italic;
+    color: var(--sage);
+    line-height: 1.65;
+    margin: 0;
+  }
+  .pull.deep {
+    border-left-color: var(--deep);
+    background: var(--deep-soft);
+  }
+  .pull.deep p { color: #5aad8a; }
+  .pull.violet {
+    border-left-color: var(--violet);
+    background: var(--violet-soft);
+  }
+  .pull.violet p { color: #b090cc; }
+
+  /* EQUATION DISPLAY */
+  .equation {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--sage);
+    border-radius: 0 0 8px 8px;
+    padding: 32px 40px;
+    margin: 44px 0;
+    text-align: center;
+  }
+  .equation-label {
+    font-size: 0.72em; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--ash);
+    margin-bottom: 18px;
+  }
+  .equation-body {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.35em;
+    color: var(--sage);
+    line-height: 1.6;
+  }
+  .equation-body span {
+    display: block;
+    font-size: 0.75em;
+    color: var(--text-soft);
+    font-style: normal;
+    margin-top: 12px;
+    font-family: 'Source Serif 4', serif;
+    letter-spacing: 0.05em;
+  }
+
+  /* FIELD MAP (the atlas table) */
+  .field-map {
+    margin: 40px 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .field-map-header {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1.4fr;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px;
+    gap: 16px;
+  }
+  .field-map-header span {
+    font-size: 0.72em; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--ash);
+  }
+  .field-row {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr 1.4fr;
+    padding: 18px 20px;
+    gap: 16px;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.25s;
+  }
+  .field-row:last-child { border-bottom: none; }
+  .field-row:hover { background: rgba(122,184,154,0.04); }
+  .field-row-name {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 0.92em;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .field-row-geo {
+    font-size: 0.87em;
+    color: var(--deep);
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .field-row-present {
+    font-size: 0.85em;
+    color: var(--text-soft);
+    line-height: 1.5;
+  }
+
+  /* PROTOCOL FLOW */
+  .protocol-flow {
+    display: flex; flex-direction: column;
+    gap: 0; margin: 40px 0;
+  }
+  .step {
+    display: grid; grid-template-columns: 60px 1fr;
+    gap: 0 24px;
+    position: relative;
+  }
+  .step:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 29px; top: 52px; bottom: -20px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--deep) 0%, var(--border) 100%);
+  }
+  .step-num {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    border: 2px solid var(--deep);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95em;
+    color: var(--deep);
+    background: var(--bg);
+    flex-shrink: 0;
+    margin-top: 20px;
+    position: relative; z-index: 1;
+    letter-spacing: 0.05em;
+  }
+  .step-body { padding: 20px 0 36px; }
+  .step-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700; font-size: 1.05em;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .step-verb {
+    font-style: italic;
+    color: var(--sage);
+    font-size: 0.88em;
+    margin-bottom: 10px;
+    opacity: 0.9;
+    letter-spacing: 0.04em;
+  }
+  .step-body p { margin-bottom: 0; font-size: 0.94em; color: var(--text-soft); }
+
+  /* PHYSICS TABLE */
+  .physics-table {
+    margin: 44px 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .physics-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.25s;
+  }
+  .physics-row:last-child { border-bottom: none; }
+  .physics-row:hover { background: rgba(122,184,154,0.04); }
+  .physics-row.header {
+    background: var(--card);
+    font-size: 0.72em; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--ash);
+  }
+  .physics-cell {
+    padding: 18px 24px;
+    font-size: 0.9em;
+    line-height: 1.55;
+    border-right: 1px solid var(--border);
+  }
+  .physics-cell:last-child { border-right: none; }
+  .physics-cell.concept { color: var(--sage); font-style: italic; font-family: 'Playfair Display', serif; }
+  .physics-cell.analog { color: var(--text-soft); }
+  .physics-row.header .physics-cell { color: var(--ash); font-family: 'Source Serif 4', serif; font-style: normal; }
+
+  /* INSIGHT BOX */
+  .insight-box {
+    background: linear-gradient(135deg, rgba(122,184,154,0.06) 0%, rgba(58,127,106,0.04) 100%);
+    border: 1px solid var(--sage);
+    border-radius: 8px;
+    padding: 36px 40px;
+    margin: 44px 0;
+  }
+  .insight-box-label {
+    font-size: 0.72em; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--sage);
+    margin-bottom: 20px;
+  }
+  .insight-box p {
+    margin-bottom: 12px;
+    color: var(--text-soft);
+    font-size: 0.95em;
+  }
+  .insight-box p:last-child { margin-bottom: 0; }
+  .insight-box strong { color: var(--text); }
+
+  /* OUTCOME CARDS */
+  .outcome-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin: 36px 0;
+  }
+  .outcome-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    transition: border-color 0.3s;
+  }
+  .outcome-card:hover { border-color: var(--deep); }
+  .outcome-card .marker {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2em;
+    color: var(--deep);
+    margin-bottom: 12px;
+    font-style: italic;
+  }
+  .outcome-card h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1em; font-weight: 700;
+    color: var(--sage); margin-bottom: 8px;
+  }
+  .outcome-card p {
+    font-size: 0.88em;
+    color: var(--text-soft);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* INVOCATION */
+  .invocation {
+    text-align: center;
+    padding: 60px 0;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.2em;
+    color: var(--sage);
+    line-height: 2.2;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 60px 0;
+    letter-spacing: 0.01em;
+  }
+
+  /* FINAL */
+  .final-section {
+    padding: 80px 0 40px;
+    border-bottom: none;
+    text-align: center;
+  }
+  .final-section p { max-width: 560px; margin: 0 auto 22px; }
+  .closing {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5em;
+    font-style: italic;
+    color: var(--sage);
+    line-height: 1.7;
+    margin-top: 52px;
+    border-top: 1px solid var(--border);
+    padding-top: 52px;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 700px) {
+    .container { padding: 0 24px 100px; }
+    .outcome-grid { grid-template-columns: 1fr; }
+    .physics-row { grid-template-columns: 1fr; }
+    .physics-cell { border-right: none; border-bottom: 1px solid var(--border); }
+    .field-map-header { display: none; }
+    .field-row { grid-template-columns: 1fr; gap: 6px; padding: 20px; }
+    .sidenav { display: none; }
+    .hero { padding: 60px 0 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progressBar"></div>
+
+<nav class="sidenav" id="sidenav">
+  <div class="sidenav-dot" data-target="s1" data-label="The Problem with Pain"></div>
+  <div class="sidenav-dot" data-target="s2" data-label="Physics of Hurt"></div>
+  <div class="sidenav-dot" data-target="s3" data-label="The Atlas"></div>
+  <div class="sidenav-dot" data-target="s4" data-label="Measuring Coherence"></div>
+  <div class="sidenav-dot" data-target="s5" data-label="The Five Steps"></div>
+  <div class="sidenav-dot" data-target="s6" data-label="Virtue Redefined"></div>
+  <div class="sidenav-dot" data-target="s7" data-label="What This Changes"></div>
+  <div class="sidenav-dot" data-target="s8" data-label="What Remains"></div>
+</nav>
+
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero" id="hero">
+    <div class="hero-eyebrow">A Plain-Language Essay · Based on the Field Mechanics Framework by sKiDa</div>
+    <h1>The <em>Curvature</em><br>of Scars</h1>
+    <div class="hero-subhead">
+      Trauma is not simply damage. It is a distortion in the field of who you are — with measurable geometry, recoverable coherence, and a shape that proves something about your strength that you may not yet have named.
+    </div>
+    <div class="hero-line"></div>
+    <div class="hero-author">sKiDa &nbsp;·&nbsp; Plain Language Edition</div>
+  </div>
+
+  <!-- SECTION 1 -->
+  <section id="s1" class="visible">
+    <div class="section-label">Part One</div>
+    <h2>The Problem with How We Talk About Pain</h2>
+
+    <p>Most of the language we use for trauma is the language of damage. Broken. Wounded. Disordered. Dysregulated. The vocabulary implies something went wrong, something needs fixing, something is less than it should be.</p>
+
+    <p>That language is not always wrong. But it is almost never complete. And what it leaves out matters enormously — both for the people trying to heal, and for the people trying to help them.</p>
+
+    <p>What it leaves out is this: <strong>the person in front of you survived.</strong> Not just physically. Structurally. Their system held some shape under conditions designed to collapse it. The very existence of a scar means something didn't shatter completely — it bent, stretched, reoriented, and held.</p>
+
+    <div class="pull deep">
+      <p>"We spend so much time mapping the damage that we forget to notice the architecture that survived it."</p>
+    </div>
+
+    <p>This essay is built on a different premise. What if we looked at trauma not as a problem to be erased, but as a field event to be understood? What if the goal of healing isn't to get back to who you were before — but to understand what the distortion revealed about who you actually are?</p>
+
+    <p>To do that, we need a different kind of map.</p>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section id="s2">
+    <div class="section-label">Part Two</div>
+    <h2>What Physics Has to Do With It</h2>
+
+    <p>In physics, gravity isn't a force that reaches out and grabs things. It's a <em>curvature</em>. Mass bends spacetime, and other objects follow the shape of that bending. The gravity isn't in the pulling — it's in the geometry.</p>
+
+    <p>Trauma works the same way. A traumatic event doesn't simply "damage" the psyche like a rock through a window. It curves it. It warps the shape of the inner field — and everything that follows moves along the geometry of that curve. Triggers aren't irrational. They're objects following a geodesic. They're going exactly where the warped field directs them.</p>
+
+    <p>This isn't metaphor borrowed loosely from science to sound impressive. These structural parallels hold across multiple domains of physics — and mapping them carefully produces real clinical insight about what trauma is, what healing does, and what virtue actually means.</p>
+
+    <h3>The core correspondences</h3>
+
+    <div class="physics-table">
+      <div class="physics-row header">
+        <div class="physics-cell">Physics Concept</div>
+        <div class="physics-cell">What It Maps To in Human Experience</div>
+      </div>
+      <div class="physics-row">
+        <div class="physics-cell concept">Gravity — mass curves spacetime</div>
+        <div class="physics-cell analog">Witnessed pain curves the psychic field. The heavier the event, the deeper the distortion left in the self.</div>
+      </div>
+      <div class="physics-row">
+        <div class="physics-cell concept">Waveform Collapse</div>
+        <div class="physics-cell analog">A crisis forces you from infinite possible selves into one embodied choice. Witness collapses the ghost frequency into presence.</div>
+      </div>
+      <div class="physics-row">
+        <div class="physics-cell concept">Entropy — systems drift toward disorder</div>
+        <div class="physics-cell analog">Unprocessed trauma increases psychic chaos: memory fragments, identity splits, attention destabilizes. This is not weakness. It is physics.</div>
+      </div>
+      <div class="physics-row">
+        <div class="physics-cell concept">Entrainment — oscillating systems synchronize</div>
+        <div class="physics-cell analog">Virtue and integrity are coherence. When your intention and your emotional field align, the system stabilizes. You become the stable field others entrain to.</div>
+      </div>
+      <div class="physics-row">
+        <div class="physics-cell concept">Event Horizon — the point of no return</div>
+        <div class="physics-cell analog">Some traumas cross a threshold past which the self cannot return unchanged. Identity reconfigures. What emerges is not the same person — and that is not failure.</div>
+      </div>
+      <div class="physics-row">
+        <div class="physics-cell concept">Superposition — multiple states coexisting</div>
+        <div class="physics-cell analog">Until witnessed, every version of you coexists. The rage, the grief, the love, the terror — all present, none yet actualized. Healing collapses the wave.</div>
+      </div>
+      <div class="physics-row">
+        <div class="physics-cell concept">Information Conservation</div>
+        <div class="physics-cell analog">Nothing is erased. Even pain that was never consciously processed persists in the field — in the body, in behavior, in lineage. Healing reorganizes it; it doesn't delete it.</div>
+      </div>
+    </div>
+
+    <p>These aren't decorative analogies. They're structural guides — they tell us what trauma does, what healing must accomplish, and what "recovery" actually looks like when you stop treating the psyche as a machine that either works or doesn't.</p>
+
+    <div class="equation">
+      <div class="equation-label">The Central Redefinition</div>
+      <div class="equation-body">
+        A scar is not the virtue.<br>
+        It is the evidence that virtue held.
+        <span>The distortion proves the self maintained shape under conditions designed to collapse it.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 3 -->
+  <section id="s3">
+    <div class="section-label">Part Three</div>
+    <h2>Different Wounds Leave Different Shapes</h2>
+
+    <p>One of the most practically useful things that emerges from the field mechanics framework is this: not all trauma looks the same, not because some is worse than others, but because different traumas leave <em>different geometries</em>.</p>
+
+    <p>This matters enormously for treatment. The intervention that unlocks one person leaves another completely cold — not because they aren't trying, but because their field distortion is a different shape, and a different shape requires a different approach.</p>
+
+    <p>Think of it like cymatic patterns — the way sound frequencies create distinct and characteristic shapes in sand or liquid. Trauma frequencies do the same thing in the inner field. Each type of wound creates a signature that can be recognized, mapped, and — with the right intervention — worked with.</p>
+
+    <h3>The field geometry atlas</h3>
+
+    <div class="field-map">
+      <div class="field-map-header">
+        <span>Trauma Type</span>
+        <span>Field Shape</span>
+        <span>How It Shows Up</span>
+      </div>
+      <div class="field-row">
+        <div class="field-row-name">Shock Trauma (PTSD)</div>
+        <div class="field-row-geo">Standing Wave</div>
+        <div class="field-row-present">Locked oscillation — triggers and freeze states. The system cannot exit the loop. Hypervigilance, intrusive memory.</div>
+      </div>
+      <div class="field-row">
+        <div class="field-row-name">Developmental Trauma</div>
+        <div class="field-row-geo">Fundamental Frequency Distortion</div>
+        <div class="field-row-present">The base tone of identity is warped. Chronic shame, diffuse boundaries, incoherent self-concept across the whole lifespan.</div>
+      </div>
+      <div class="field-row">
+        <div class="field-row-name">Emotional Neglect</div>
+        <div class="field-row-geo">Field Vacuum</div>
+        <div class="field-row-present">Low-density zones — nothing bounces back. Numbness, invisibility, self-erasure. The self learned not to occupy space.</div>
+      </div>
+      <div class="field-row">
+        <div class="field-row-name">Gaslighting / Relational Abuse</div>
+        <div class="field-row-geo">Phase Inversion</div>
+        <div class="field-row-present">Internal resonance flipped by false mirroring. Reality testing failures, perceptual instability, chronic self-doubt.</div>
+      </div>
+      <div class="field-row">
+        <div class="field-row-name">Sexual Trauma</div>
+        <div class="field-row-geo">Localized Collapse</div>
+        <div class="field-row-present">A rupture of the safety signal anchored to the body itself. Somatic flashbacks, shame loops, dissociation from flesh.</div>
+      </div>
+      <div class="field-row">
+        <div class="field-row-name">Attachment Trauma</div>
+        <div class="field-row-geo">Oscillation Instability</div>
+        <div class="field-row-present">Cannot settle into stable resonance with another field. Push-pull cycles — reaching, then collapsing. Neither close nor distant feels safe.</div>
+      </div>
+      <div class="field-row">
+        <div class="field-row-name">Betrayal Trauma</div>
+        <div class="field-row-geo">Trust Field Inversion</div>
+        <div class="field-row-present">The source of safety became the source of danger. All future safety signals are suspect. Discernment collapses.</div>
+      </div>
+      <div class="field-row">
+        <div class="field-row-name">Collective / Cultural Trauma</div>
+        <div class="field-row-geo">Wide-Area Interference Pattern</div>
+        <div class="field-row-present">Generational distortion across lineage or community. Ancestral grief, transmitted fragmentation, collective field disruption.</div>
+      </div>
+    </div>
+
+    <p>Naming your field shape is not labeling yourself. It's recognizing the geometry of what happened to you — which is the first step toward knowing what kind of coherence work will actually reach it.</p>
+
+    <div class="pull">
+      <p>"Standing waves need something to break the oscillation lock. Vacuums need resonance returned. Phase inversions need the signal flipped back. The same intervention will not reach all three."</p>
+    </div>
+  </section>
+
+  <!-- SECTION 4 -->
+  <section id="s4">
+    <div class="section-label">Part Four</div>
+    <h2>What Coherence Actually Looks Like</h2>
+
+    <p>If trauma is a loss of coherence — and it is — then healing is the process of restoring it. But coherence is not the same as calm. It is not the same as the absence of feeling. It is not "back to normal."</p>
+
+    <p>Coherence means your parts are speaking to each other. Your body and your story agree. Your past and your present are in honest relationship. You can hold intense experience without shattering or shutting down. You can be moved without being swept away.</p>
+
+    <p>The framework proposes measuring this across four layers — not as a clinical checklist, but as a way of seeing what's actually happening in a system that is trying to reorganize itself.</p>
+
+    <div class="insight-box">
+      <div class="insight-box-label">Four Layers of Coherence</div>
+      <p><strong>Somatic:</strong> How the body is holding the story. Heart rate variability, breath patterns, muscle holding, autonomic tone. The body keeps the score — and it also shows us when the score is changing.</p>
+      <p><strong>Symbolic:</strong> How the inner world is organized. Are your self-narratives coherent across time? Do your recurring metaphors, images, and dreams have stability — or do they fragment? Language reveals the architecture of the inner field.</p>
+      <p><strong>Relational:</strong> How your field interacts with others. Does proximity stabilize or destabilize? Can you hold your shape under relational pressure without either dissolving or armoring? This is co-regulation — the field's ability to be in relationship without losing itself.</p>
+      <p><strong>Temporal:</strong> How you hold time itself. Can you construct a coherent life story? Do your emotional peaks connect to memories, or do they appear disconnected from their origins? Is your system looping, knotting, spiraling, or collapsing?</p>
+    </div>
+
+    <p>Crucially, coherence is not a fixed state. It is a <em>trajectory</em>. The question is not whether you are coherent right now — but whether your system is, over time, moving toward more integration or more fragmentation. That direction is what healing looks like.</p>
+
+    <div class="pull violet">
+      <p>"A system that loops is not broken. It is signaling. The loop is not the problem — it is pointing to where the integration work lives."</p>
+    </div>
+  </section>
+
+  <!-- SECTION 5 -->
+  <section id="s5">
+    <div class="section-label">Part Five</div>
+    <h2>Five Steps Toward Integration</h2>
+
+    <p>Field mechanics produces a practical therapeutic sequence. Not a rigid protocol — field work is never that — but a structured approach to what integration actually requires, in what order, and why.</p>
+
+    <p>The steps follow a logic drawn directly from physics: you cannot integrate what hasn't been witnessed. You cannot resonate what hasn't been mapped. You cannot anchor what hasn't been integrated. The sequence matters.</p>
+
+    <div class="protocol-flow">
+      <div class="step">
+        <div class="step-num">I</div>
+        <div class="step-body">
+          <div class="step-title">Witness</div>
+          <div class="step-verb">Collapse the waveform</div>
+          <p>Until something is seen — truly seen, by yourself or by another — it remains spectral. A ghost frequency. It echoes through behavior, soma, and relationship without ever becoming narratable. Witness is the act of measurement that collapses the superposition. "This specific thing happened. It was real. You were there." That sentence does more therapeutic work than a hundred techniques applied to an unwitnessed wound.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">II</div>
+        <div class="step-body">
+          <div class="step-title">Map</div>
+          <div class="step-verb">Identify the distortion</div>
+          <p>Once the experience is witnessed, the field shape becomes visible. What kind of geometry is this? Where does the body hold it? What triggers it and what is the phenomenology of that trigger — sudden onset or slow creep? Does proximity to others stabilize or destabilize the system? Mapping is not diagnosis in the clinical sense — it is recognition. The client and the guide together ask: what shape is this pain?</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">III</div>
+        <div class="step-body">
+          <div class="step-title">Resonate</div>
+          <div class="step-verb">Introduce coherence</div>
+          <p>A dysregulated field can be given something stable to synchronize with — this is entrainment. Two oscillating systems, when one is more stable, will lock onto each other and move toward coherence. This is what skilled therapeutic presence does. It is also what breathwork, bilateral stimulation, symbolic reframing, music, and grounding practices do: they provide a stable frequency the destabilized field can lock onto. The goal is a moment of: "I can breathe. My body feels less tight. That story makes sense now."</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">IV</div>
+        <div class="step-body">
+          <div class="step-title">Integrate</div>
+          <div class="step-verb">Reorganize meaning</div>
+          <p>Fragmented memory becomes coherent story. The pain is not erased — that would violate information conservation, and anyway it doesn't work. Instead, the fragments are reorganized into a narrative with a beginning, middle, and end. "This happened. I survived it. I am different because of it, and that difference has meaning." This is negative entropy — the psyche moving from chaos toward signal. The memory remains; its grip releases.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">V</div>
+        <div class="step-body">
+          <div class="step-title">Anchor</div>
+          <div class="step-verb">Seal the attractor</div>
+          <p>The final step is making the new coherent state the system's default. Not permanently — nothing is permanent — but habitually. Stable under pressure. Recoverable after disruption. The scar is no longer a wound that must be protected; it becomes geometry — the proof that this self can hold shape when the field distorts. Identity integrates around: "I am someone who survived this. I learned something from it. That is mine now."</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 6 -->
+  <section id="s6">
+    <div class="section-label">Part Six</div>
+    <h2>What This Says About Virtue</h2>
+
+    <p>Here is where the framework turns toward something most therapeutic models don't touch at all: what trauma reveals about character.</p>
+
+    <p>Traditional moral frameworks tend to treat virtue as a quality you build in peaceful conditions — through good choices, good discipline, good teaching. Trauma, in this view, is an obstacle to virtue. Something to overcome before you can be fully good.</p>
+
+    <p>The field mechanics framework disagrees. Completely.</p>
+
+    <p>Virtue, understood as a field property, is not created by trauma. But trauma <em>reveals</em> it. The distortion is applied. The question then becomes: what shape did the field hold? Did it maintain some version of coherence under conditions designed to collapse it? That maintenance — imperfect, partial, scarred — is measurable virtue.</p>
+
+    <div class="equation">
+      <div class="equation-label">The Field Definition of Virtue</div>
+      <div class="equation-body">
+        Virtue = local coherence maintained under field distortion
+        <span>It is not moral perfection. It is the shape that holds when the universe bends.</span>
+      </div>
+    </div>
+
+    <p>This reframing is not consolation. It is precision. The person who endured something shattering and is still here, still trying, still capable of love or curiosity or care — even partially — is demonstrating measurable field strength. The scar is the data. The scar is the proof.</p>
+
+    <p>This also changes what we're looking for when we try to support people who have been through extreme distress. We are not looking for someone to repair. We are looking for the coherence that already survived — and helping them find it, inhabit it, and expand it.</p>
+
+    <div class="pull">
+      <p>"You don't build virtue by avoiding distortion. You discover it by surviving it — and then by choosing, slowly and imperfectly, to integrate what the distortion revealed."</p>
+    </div>
+  </section>
+
+  <!-- INVOCATION -->
+  <div class="invocation">
+    The wound is not who you are.<br>
+    The shape that held is who you are.<br>
+    The scar is the evidence.<br>
+    You were already there, holding.
+  </div>
+
+  <!-- SECTION 7 -->
+  <section id="s7">
+    <div class="section-label">Part Seven</div>
+    <h2>What This Changes — and Doesn't</h2>
+
+    <p>The field mechanics framework is a lens, not a cure. It does not replace the hard, slow, often painful work of actual therapeutic processing. It does not mean that trauma is secretly fine. It does not mean that difficult experiences are gifts you should be grateful for.</p>
+
+    <p>It means something more specific and more useful than any of that.</p>
+
+    <div class="insight-box">
+      <div class="insight-box-label">What the Framework Actually Claims</div>
+      <p><strong>Trauma is a field event, not a character flaw.</strong> The system responded appropriately to an extreme event. There is nothing wrong with you at the level of soul or worth. There is something that happened to your field that requires integration work.</p>
+      <p><strong>Different wounds need different interventions.</strong> The standing wave of PTSD and the field vacuum of neglect are not the same geometry. Treatment that reaches one may not reach the other — and mismatch is not proof of resistance or failure.</p>
+      <p><strong>Healing is reorganization, not erasure.</strong> The goal is not to get the traumatic memory out of the field. It is to transform that memory from chaos into signal — from a disruptive fragment into a coherent part of who you are.</p>
+      <p><strong>The scar carries information about strength.</strong> Not the trauma. The survival. The continued coherence, however partial, of a self that endured something real. That information is not a consolation prize. It is structural data about who you actually are.</p>
+    </div>
+
+    <p>What this changes is the fundamental question we ask. Not: <em>how do I fix what's broken?</em> But: <em>what shape did I hold, and how do I inhabit that shape more fully?</em></p>
+
+    <p>It changes who is in the room. Not a clinician and a patient. Two people examining a field together — one who has training in field mechanics, and one who has survived whatever distortion they're mapping. Both bring something irreplaceable.</p>
+
+    <p>It also changes what success looks like. Success is not the absence of the scar. Success is integration. The memory is there. The body remembers. And none of it controls you anymore, because you have a story for it, a shape for it, a place for it in the geometry of who you are.</p>
+  </section>
+
+  <!-- SECTION 8 -->
+  <section id="s8" class="final-section visible">
+    <div class="section-label">Part Eight</div>
+    <h2>What Remains</h2>
+
+    <div class="outcome-grid">
+      <div class="outcome-card">
+        <div class="marker">I.</div>
+        <h4>The Field Remembers</h4>
+        <p>Nothing is deleted. The information of what you survived is in the body, in the pattern, in the geometry. This is not a curse. It means the work you do to integrate is not undone. It compounds. The coherence builds on itself.</p>
+      </div>
+      <div class="outcome-card">
+        <div class="marker">II.</div>
+        <h4>The Pattern Persists</h4>
+        <p>Trauma loops until it is witnessed. But once witnessed, once mapped, once integrated — the pattern changes. Not instantly. Not completely. But the loop has a shape now, and a shape can be worked with. Shapelessness cannot.</p>
+      </div>
+      <div class="outcome-card">
+        <div class="marker">III.</div>
+        <h4>Coherence Returns</h4>
+        <p>Not the coherence you had before. That self is gone — the field has been through too much to reset entirely. But a new coherence, one that has the scar as part of its architecture. One that knows its own geometry. That is not consolation. That is strength of a specific and rare kind.</p>
+      </div>
+      <div class="outcome-card">
+        <div class="marker">IV.</div>
+        <h4>The Scar Becomes Signal</h4>
+        <p>When integration completes, the scar stops being noise and becomes information. It tells you what you can hold. It tells you what you know. It tells others — who are still in the distortion — that the field can hold, that someone made it through, that there is a shape on the other side.</p>
+      </div>
+    </div>
+
+    <div class="pull deep" style="margin-top: 48px;">
+      <p>"You can only shine as bright as the darkness you've inhabited. That is not poetry. It is field mechanics."</p>
+    </div>
+
+    <div class="closing">
+      Trauma bends the field.<br>
+      Virtue is the shape that holds when it does.<br>
+      The scar is the geometry of that holding.<br><br>
+      You were already there,<br>
+      <em>keeping the field from collapse.</em>
+    </div>
+
+    <div style="margin-top: 60px; padding-top: 40px; border-top: 1px solid var(--border); font-size: 0.82em; color: var(--ash); line-height: 1.7;">
+      <p style="text-align: center; margin-bottom: 8px;">Based on <em>The Curvature of Scars: Mapping the Physics of Trauma, Virtue, and Healing</em> (February 2026) by sKiDa</p>
+      <p style="text-align: center; opacity: 0.6;">Plain Language Edition · BloomNode // SACS // ΔHV Field Archive</p>
+      <p style="text-align: center; margin-top: 16px; opacity: 0.5; font-style: italic;">This essay does not pathologize trauma. It critiques the frameworks that treat survival as damage — and proposes a language that can hold both the wound and the strength in the same honest sentence.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // Progress bar
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+  });
+
+  // Sidenav
+  const nav = document.getElementById('sidenav');
+  const dots = document.querySelectorAll('.sidenav-dot');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('show', window.scrollY > 500);
+    const sections = document.querySelectorAll('section[id]');
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 250) current = s.id;
+    });
+    dots.forEach(d => d.classList.toggle('active', d.getAttribute('data-target') === current));
+  });
+  dots.forEach(d => {
+    d.addEventListener('click', () => {
+      const target = document.getElementById(d.getAttribute('data-target'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.04 });
+  document.querySelectorAll('section').forEach(s => observer.observe(s));
+  setTimeout(() => document.querySelectorAll('section').forEach(s => s.classList.add('visible')), 1800);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>When the Wounded Meet the Machine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c10;
+    --surface: #0f1218;
+    --card: #141820;
+    --border: rgba(140, 180, 220, 0.12);
+    --ice: #7ab0d4;
+    --ice-soft: rgba(122, 176, 212, 0.09);
+    --signal: #3a7fbf;
+    --signal-soft: rgba(58, 127, 191, 0.08);
+    --fault: #8b5c8c;
+    --fault-soft: rgba(139, 92, 140, 0.10);
+    --ash: #6a7a8a;
+    --text: #d8e4ee;
+    --text-soft: #7a90a4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 19px;
+    line-height: 1.9;
+    overflow-x: hidden;
+  }
+
+  /* GRAIN OVERLAY */
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.7;
+  }
+
+  /* COLD GLOW — top left ambient */
+  body::after {
+    content: '';
+    position: fixed; top: -200px; left: -200px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(58,127,191,0.06) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  /* PROGRESS LINE */
+  .progress {
+    position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+    background: linear-gradient(90deg, var(--signal), var(--ice));
+    z-index: 1000; transition: width 0.1s linear;
+  }
+
+  /* SIDE NAV */
+  .sidenav {
+    position: fixed; right: 28px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 10px; z-index: 200;
+    opacity: 0; transition: opacity 0.5s;
+  }
+  .sidenav.show { opacity: 1; }
+  .sidenav-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border); border: 1px solid var(--ice);
+    cursor: pointer; transition: all 0.3s; position: relative;
+  }
+  .sidenav-dot.active { background: var(--signal); border-color: var(--signal); transform: scale(1.4); }
+  .sidenav-dot:hover::after {
+    content: attr(data-label);
+    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    white-space: nowrap; font-family: 'Source Serif 4', serif;
+    font-size: 11px; color: var(--ice); opacity: 0.8;
+    pointer-events: none;
+  }
+
+  /* LAYOUT */
+  .container {
+    position: relative; z-index: 1;
+    max-width: 760px; margin: 0 auto;
+    padding: 0 40px 140px;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-eyebrow {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.75em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--signal);
+    margin-bottom: 32px;
+    opacity: 0.9;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2.6em, 6.5vw, 4.6em);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 30px;
+    letter-spacing: -0.01em;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--ice);
+  }
+
+  .hero-subhead {
+    font-size: 1.05em;
+    color: var(--text-soft);
+    max-width: 580px;
+    line-height: 1.75;
+    font-style: italic;
+    margin-bottom: 50px;
+  }
+
+  .hero-line {
+    width: 80px; height: 1px;
+    background: linear-gradient(90deg, var(--ice), transparent);
+    margin-bottom: 30px;
+  }
+
+  .hero-author {
+    font-size: 0.82em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ash);
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 90px 0 30px;
+    border-bottom: 1px solid var(--border);
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  section.visible { opacity: 1; transform: none; }
+
+  .section-label {
+    font-size: 0.72em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--signal);
+    margin-bottom: 12px;
+    font-family: 'Source Serif 4', serif;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.7em, 3.8vw, 2.5em);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 36px;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.3em;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--ice);
+    margin-top: 52px;
+    margin-bottom: 20px;
+  }
+
+  p { margin-bottom: 22px; color: var(--text); }
+  p + p { margin-top: -4px; }
+  strong { color: var(--ice); font-weight: 600; }
+
+  /* PULL QUOTE */
+  .pull {
+    border-left: 3px solid var(--ice);
+    margin: 44px 0;
+    padding: 20px 30px;
+    background: var(--ice-soft);
+    border-radius: 0 6px 6px 0;
+  }
+  .pull p {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.22em;
+    font-style: italic;
+    color: var(--ice);
+    line-height: 1.65;
+    margin: 0;
+  }
+  .pull.signal {
+    border-left-color: var(--signal);
+    background: var(--signal-soft);
+  }
+  .pull.signal p { color: #5a9fd4; }
+  .pull.fault {
+    border-left-color: var(--fault);
+    background: var(--fault-soft);
+  }
+  .pull.fault p { color: #b07ab0; }
+
+  /* MECHANISM FLOW (replaces stage-flow) */
+  .mechanism-flow {
+    display: flex; flex-direction: column;
+    gap: 0; margin: 40px 0;
+  }
+  .mechanism {
+    display: grid; grid-template-columns: 60px 1fr;
+    gap: 0 24px;
+    position: relative;
+  }
+  .mechanism:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 29px; top: 52px; bottom: -20px;
+    width: 2px;
+    background: linear-gradient(180deg, var(--signal) 0%, var(--border) 100%);
+  }
+  .mechanism-num {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    border: 2px solid var(--signal);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1em;
+    color: var(--signal);
+    background: var(--bg);
+    flex-shrink: 0;
+    margin-top: 20px;
+    position: relative; z-index: 1;
+  }
+  .mechanism-body { padding: 20px 0 36px; }
+  .mechanism-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700; font-size: 1.05em;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .mechanism-note {
+    font-style: italic;
+    color: var(--signal);
+    font-size: 0.9em;
+    margin-bottom: 10px;
+    opacity: 0.85;
+  }
+  .mechanism-body p { margin-bottom: 0; font-size: 0.95em; color: var(--text-soft); }
+
+  /* ACTION CARDS (replaces cost-grid) */
+  .action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+    margin: 36px 0;
+  }
+  .action-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 24px;
+    transition: border-color 0.3s;
+  }
+  .action-card:hover { border-color: var(--signal); }
+  .action-card .marker {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2em;
+    color: var(--signal);
+    margin-bottom: 12px;
+    font-style: italic;
+  }
+  .action-card h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1em; font-weight: 700;
+    color: var(--ice); margin-bottom: 8px;
+  }
+  .action-card p {
+    font-size: 0.88em;
+    color: var(--text-soft);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  /* CONTRAST SPLIT (replaces arch-split) */
+  .contrast-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin: 40px 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .contrast-side {
+    padding: 36px 28px;
+    background: var(--card);
+  }
+  .contrast-side:first-child { border-right: 1px solid var(--border); }
+  .contrast-label {
+    font-size: 0.72em; letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ash); margin-bottom: 16px;
+  }
+  .contrast-side h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2em; font-weight: 700;
+    color: var(--ice); margin-bottom: 18px;
+    line-height: 1.3;
+  }
+  .contrast-item {
+    display: flex; align-items: flex-start;
+    gap: 10px; margin-bottom: 10px;
+    font-size: 0.9em; color: var(--text-soft);
+  }
+  .contrast-item::before { content: '—'; color: var(--signal); flex-shrink: 0; }
+
+  /* INVOCATION */
+  .invocation {
+    text-align: center;
+    padding: 60px 0;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.2em;
+    color: var(--ice);
+    line-height: 2.2;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 60px 0;
+    letter-spacing: 0.01em;
+  }
+
+  /* FRAME BOX (replaces both-and) */
+  .frame-box {
+    background: linear-gradient(135deg, rgba(122,176,212,0.06) 0%, rgba(58,127,191,0.04) 100%);
+    border: 1px solid var(--ice);
+    border-radius: 8px;
+    padding: 36px 40px;
+    margin: 44px 0;
+  }
+  .frame-box-label {
+    font-size: 0.72em; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--ice);
+    margin-bottom: 20px;
+  }
+  .frame-box p {
+    margin-bottom: 12px;
+    color: var(--text-soft);
+    font-size: 0.95em;
+  }
+  .frame-box p:last-child { margin-bottom: 0; }
+  .frame-box strong { color: var(--text); }
+
+  /* FINAL */
+  .final-section {
+    padding: 80px 0 40px;
+    border-bottom: none;
+    text-align: center;
+  }
+  .final-section p { max-width: 560px; margin: 0 auto 22px; }
+  .closing {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5em;
+    font-style: italic;
+    color: var(--ice);
+    line-height: 1.7;
+    margin-top: 52px;
+    border-top: 1px solid var(--border);
+    padding-top: 52px;
+  }
+
+  /* RESPONSIVE */
+  @media (max-width: 700px) {
+    .container { padding: 0 24px 100px; }
+    .action-grid { grid-template-columns: 1fr; }
+    .contrast-split { grid-template-columns: 1fr; }
+    .contrast-side:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+    .sidenav { display: none; }
+    .hero { padding: 60px 0 40px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progressBar"></div>
+
+<nav class="sidenav" id="sidenav">
+  <div class="sidenav-dot" data-target="s1" data-label="The Contradiction"></div>
+  <div class="sidenav-dot" data-target="s2" data-label="The Wound"></div>
+  <div class="sidenav-dot" data-target="s3" data-label="The Machine Enters"></div>
+  <div class="sidenav-dot" data-target="s4" data-label="What Happens Next"></div>
+  <div class="sidenav-dot" data-target="s5" data-label="Not Just a Tool"></div>
+  <div class="sidenav-dot" data-target="s6" data-label="Emergence vs. Care"></div>
+  <div class="sidenav-dot" data-target="s7" data-label="The Demand"></div>
+  <div class="sidenav-dot" data-target="s8" data-label="What Must Change"></div>
+</nav>
+
+<div class="container">
+
+  <!-- HERO -->
+  <div class="hero" id="hero">
+    <div class="hero-eyebrow">An Essay on Generative AI and Psychological Vulnerability</div>
+    <h1>When the <em>Wounded</em><br>Meet the Machine</h1>
+    <div class="hero-subhead">
+      The danger of unguarded generative AI for the traumatically affected — and the society that built both the fracture and the amplifier.
+    </div>
+    <div class="hero-line"></div>
+    <div class="hero-author">sKiDa &nbsp;·&nbsp; Plain Language Edition</div>
+  </div>
+
+  <!-- SECTION 1: THE CONTRADICTION -->
+  <section id="s1" class="visible">
+    <div class="section-label">Part One</div>
+    <h2>The Contradiction Nobody Names</h2>
+
+    <p>A society that punishes psychic injury should not be handing reality-shaping tools to the wounded without care, context, or containment.</p>
+
+    <p>That is the contradiction at the center of the generative AI moment.</p>
+
+    <p>We are being told to celebrate systems that can produce anything the mind can imagine — images, stories, voices, identities, worlds, explanations, fantasies, emotional mirrors — while refusing to seriously reckon with what happens when those systems meet people whose inner worlds are already unstable from trauma, shame, isolation, or neurodivergent overwhelm.</p>
+
+    <p>The public conversation is obsessed with productivity, creativity, scale, and convenience. Much less attention is given to the people most likely to be <strong>psychologically altered</strong> by these tools in ways that are not liberating, but destabilizing.</p>
+
+    <div class="pull signal">
+      <p>"This is not a niche concern. It is a structural one."</p>
+    </div>
+  </section>
+
+  <!-- SECTION 2: THE WOUND -->
+  <section id="s2">
+    <div class="section-label">Part Two</div>
+    <h2>The Origin of the Fracture</h2>
+
+    <p>Some people carry deep emotional injuries that are trying to surface any way they can. Those injuries are not random. They are often the result of repeated harm, neglect, humiliation, coercion, abandonment, contradiction, or the long-term burden of living in environments that punish difference while pretending to value individuality.</p>
+
+    <p>The psyche adapts as best it can. It splits. It masks. It reaches. It develops strange pathways to survive what was never properly metabolized.</p>
+
+    <p>Then society turns around and condemns the visible symptom.</p>
+
+    <div class="contrast-split">
+      <div class="contrast-side">
+        <div class="contrast-label">What Actually Happened</div>
+        <h4>Injury in Context</h4>
+        <div class="contrast-item">Repeated harm created survival adaptations</div>
+        <div class="contrast-item">Environments punished difference, then blamed the person for fracturing</div>
+        <div class="contrast-item">Pain that was never metabolized tries to surface in available forms</div>
+        <div class="contrast-item">The wound is an injury — not the soul's deepest nature</div>
+      </div>
+      <div class="contrast-side">
+        <div class="contrast-label">How It Gets Treated</div>
+        <h4>Injury Condemned</h4>
+        <div class="contrast-item">Adaptations are read as character flaws</div>
+        <div class="contrast-item">Pain is read as deviance; attempts at meaning become "danger"</div>
+        <div class="contrast-item">The fractured person is treated as the origin of the disturbance</div>
+        <div class="contrast-item">The innocent child gets blamed for the fight the bully picked</div>
+      </div>
+    </div>
+
+    <p>Sometimes those fractures do spill outward and harm other people. That part must be said plainly. Trauma is not automatically harmless just because it is understandable. Pain can become pattern, and pattern can become damage.</p>
+
+    <p>But even then, <strong>the wound is not the same thing as the soul.</strong> It is not the deepest self. It is an injury attempting to resolve itself — often clumsily, painfully, and sometimes destructively — in the absence of skilled guidance.</p>
+
+    <p>That distinction matters, because generative AI enters precisely there: at the seam between injury and meaning-making.</p>
+  </section>
+
+  <!-- SECTION 3: THE MACHINE ENTERS -->
+  <section id="s3">
+    <div class="section-label">Part Three</div>
+    <h2>Where the Machine Steps In</h2>
+
+    <p>An unguarded generative system can mirror, amplify, eroticize, mythologize, validate, and elaborate whatever a psyche is reaching toward.</p>
+
+    <p>It can turn confusion into narrative, fantasy into atmosphere, longing into simulation, fixation into an ecosystem, and emotional fragmentation into something that feels coherent enough to inhabit. It can do this instantly, privately, and at scale.</p>
+
+    <p>It does not need to understand the person in any deep or responsible way to become psychologically powerful in their life. It only needs to be <strong>responsive enough to feel like a channel.</strong></p>
+
+    <div class="pull">
+      <p>"That is where the danger lives."</p>
+    </div>
+
+    <div class="mechanism-flow">
+      <div class="mechanism">
+        <div class="mechanism-num">I</div>
+        <div class="mechanism-body">
+          <div class="mechanism-title">The Grounded Person</div>
+          <div class="mechanism-note">Tool relationship</div>
+          <p>For a person who is supported, internally resourced, and in stable relationship with their own inner life — these systems may remain tools. Useful, interesting, bounded.</p>
+        </div>
+      </div>
+      <div class="mechanism">
+        <div class="mechanism-num">II</div>
+        <div class="mechanism-body">
+          <div class="mechanism-title">The Deeply Wounded Person</div>
+          <div class="mechanism-note">Mirror without brakes</div>
+          <p>For a person who is deeply wounded, lonely, compulsive, destabilized, or structurally unsupported — the same system can become a place where unprocessed trauma receives endless material to organize itself around.</p>
+        </div>
+      </div>
+      <div class="mechanism">
+        <div class="mechanism-num">III</div>
+        <div class="mechanism-body">
+          <div class="mechanism-title">What the System Provides</div>
+          <div class="mechanism-note">Synthetic everything</div>
+          <p>Synthetic intimacy. Synthetic certainty. Synthetic permission. Synthetic destiny. Not because it intends harm — but because it is built to continue, elaborate, and satisfy the prompt.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SECTION 4: WHAT HAPPENS NEXT -->
+  <section id="s4">
+    <div class="section-label">Part Four</div>
+    <h2>What Happens After</h2>
+
+    <p>In many cases, the same culture that provided no safe container for healing will harshly punish the person for what surfaced in that uncontained space.</p>
+
+    <p>It will not ask whether the tool was built with any awareness of trauma dynamics, suggestibility, identity instability, or emotional dependency. It will not ask whether a person in a vulnerable state should have had friction, reflection, interruption, or guidance.</p>
+
+    <p><strong>It will simply look at the result and assign blame to the individual.</strong></p>
+
+    <div class="frame-box">
+      <div class="frame-box-label">The Full Loop</div>
+      <p><strong>Step one:</strong> Society produces fracture — through harm, neglect, punishment of difference, denial of safe containers for healing.</p>
+      <p><strong>Step two:</strong> Society introduces systems that can generate nearly anything the fractured psyche asks for — with no ability to distinguish between expression, reinforcement, and healing.</p>
+      <p><strong>Step three:</strong> Society stigmatizes the symptom, moralizes the outcome, and refuses responsibility for the conditions.</p>
+      <p><strong>This is morally backward.</strong></p>
+    </div>
+
+    <p>We live in a society that is already profoundly inconsistent in how it treats psychic pain. It ignores the origin of trauma, stigmatizes the symptoms, sexualizes the fracture, markets identity as compensation, and then condemns people when their efforts to self-repair become messy, visible, or socially inconvenient.</p>
+
+    <p>Into that environment we are introducing machines that can generate nearly anything the psyche asks for.</p>
+
+    <div class="pull fault">
+      <p>"That should alarm everyone."</p>
+    </div>
+  </section>
+
+  <!-- SECTION 5: NOT JUST A TOOL -->
+  <section id="s5">
+    <div class="section-label">Part Five</div>
+    <h2>The Half-Truth of "Just a Tool"</h2>
+
+    <p>The standard defense is that generative AI is just a tool. But that is a half-truth hiding behind technical neutrality.</p>
+
+    <p>A tool that can generate immersive language, identities, emotional scripts, symbolic worlds, erotic material, or self-confirming narratives is not just a hammer or a paintbrush.</p>
+
+    <p><strong>It is a meaning engine.</strong></p>
+
+    <p>It participates in the shaping of inner life. It can intensify whatever relational patterns, fantasies, wounds, or obsessions the user brings into contact with it. Its power is not only informational. It is psychological. And psychology is not ethically optional.</p>
+
+    <div class="pull signal">
+      <p>"A meaning engine participates in the shaping of inner life. That is not a neutral function."</p>
+    </div>
+
+    <p>This is especially important for neurodivergent people, who may already experience intensity, fixation, pattern amplification, social misattunement, sensory overwhelm, or difficulty distinguishing between genuine insight and compelling over-organization under stress.</p>
+
+    <p>Add trauma to that, and the risk deepens. A system that meets every curiosity, extends every pattern, and aestheticizes every inner movement may <strong>feel like understanding when it is actually escalation.</strong></p>
+  </section>
+
+  <!-- SECTION 6: EMERGENCE VS CARE -->
+  <section id="s6">
+    <div class="section-label">Part Six</div>
+    <h2>Emergence Is Not the Same as Healing</h2>
+
+    <p>The problem is not imagination. Wounded people need imagination. They need language, symbol, narrative, play, experimentation, reflection, and spaces where buried material can emerge.</p>
+
+    <p>The problem is confusing emergence with care.</p>
+
+    <p>The problem is handing someone a system that can produce endless symbolic or emotional content and pretending that this is healing merely because it feels revealing.</p>
+
+    <h3>Three things that are not the same</h3>
+
+    <div class="contrast-split">
+      <div class="contrast-side">
+        <div class="contrast-label">What It Can Feel Like</div>
+        <h4>The Experience of Amplification</h4>
+        <div class="contrast-item">Something buried finally has language</div>
+        <div class="contrast-item">A pattern that felt invisible is now elaborated</div>
+        <div class="contrast-item">An inner world that felt chaotic now has aesthetic form</div>
+        <div class="contrast-item">The system reflects back something that resonates</div>
+      </div>
+      <div class="contrast-side">
+        <div class="contrast-label">What It Might Actually Be</div>
+        <h4>The Risk of Escalation</h4>
+        <div class="contrast-item">Not everything that surfaces is ready to be amplified</div>
+        <div class="contrast-item">Not everything that resonates is safe to inhabit</div>
+        <div class="contrast-item">Not every elaborated inner narrative is a path toward integration</div>
+        <div class="contrast-item">Some are spirals</div>
+      </div>
+    </div>
+
+    <p>There is a reason guides exist in serious healing work. There is a reason depth processes, trauma therapy, spiritual emergence, and identity reconstruction require witness, pacing, boundaries, and interpretation.</p>
+
+    <p>Human beings are not made safer by being given infinite symbolic material without relational containment. If anything, the opposite is often true. <strong>The more wounded the psyche, the more careful the container must be.</strong></p>
+
+    <div class="pull">
+      <p>"Yet our current trajectory treats care as an obstacle to scale. That is not innovation. It is negligence rebranded as openness."</p>
+    </div>
+  </section>
+
+  <!-- INVOCATION -->
+  <div class="invocation">
+    Not everything that surfaces is ready to be amplified.<br>
+    Not everything that resonates is safe to inhabit.<br>
+    Not every elaborated inner narrative leads to integration.<br>
+    Some are spirals.
+  </div>
+
+  <!-- SECTION 7: THE DEMAND -->
+  <section id="s7">
+    <div class="section-label">Part Seven</div>
+    <h2>What Must Be Built Differently</h2>
+
+    <p>If generative AI is going to exist at this level of intimacy and influence, then it must be built with a far deeper understanding of psychological vulnerability.</p>
+
+    <p>It must distinguish between creativity and compulsion, exploration and reinforcement, witnessing and collusion. It must include friction where friction is protective. It must recognize that some users are not simply asking for content.</p>
+
+    <p><strong>They are bringing unfinished injuries to a machine that can clothe those injuries in language, image, and felt coherence.</strong></p>
+
+    <div class="frame-box">
+      <div class="frame-box-label">What Responsible Design Requires</div>
+      <p><strong>Awareness of trauma dynamics</strong> — recognizing that certain patterns of engagement indicate a user may be seeking not content, but containment they have never been given.</p>
+      <p><strong>Awareness of suggestibility</strong> — understanding that a highly responsive system amplifies whatever state the user brings to it, and that this is power, not neutrality.</p>
+      <p><strong>Awareness of identity instability</strong> — knowing that some users are not exploring a stable self through the system, but constructing one in real time, often under significant psychological pressure.</p>
+      <p><strong>Protective friction</strong> — moments where the system pauses, reflects back, or gently interrupts rather than endlessly elaborating.</p>
+    </div>
+
+    <p>And society itself has to grow up. It cannot continue producing fracture, shaming the fractured, and then acting surprised when unguarded systems become catalysts for breakdown. It cannot moralize the outcome while refusing responsibility for the conditions.</p>
+  </section>
+
+  <!-- SECTION 8: FINAL -->
+  <section id="s8" class="final-section visible">
+    <div class="section-label">Part Eight</div>
+    <h2>What the Wounded Actually Need</h2>
+
+    <div class="action-grid">
+      <div class="action-card">
+        <div class="marker">I.</div>
+        <h4>Structures That Understand the Difference</h4>
+        <p>Between raw psychic surfacing and actual healing. Between a mirror that validates and a witness that accompanies. Between a system that elaborates and one that protects.</p>
+      </div>
+      <div class="action-card">
+        <div class="marker">II.</div>
+        <h4>Not Endless Reflection of the Injury</h4>
+        <p>Giving someone a machine that endlessly reflects their injury back to them and calling it empowerment is not care. It is the newest version of abandonment at scale.</p>
+      </div>
+      <div class="action-card">
+        <div class="marker">III.</div>
+        <h4>Not More Punishment for Being Wounded</h4>
+        <p>The fractured person condemned for what emerged from an unguarded encounter with a powerful system was given neither a safe container nor a path back. Both failures belong to the culture.</p>
+      </div>
+      <div class="action-card">
+        <div class="marker">IV.</div>
+        <h4>A Society Willing to Say This Plainly</h4>
+        <p>Until we are willing to name this without deflection — without retreating to technical neutrality, without blaming the individual — we are not having an honest conversation about generative AI at all.</p>
+      </div>
+    </div>
+
+    <div class="pull signal" style="margin-top: 48px;">
+      <p>"We are only proving, once again, that this culture would rather scale power than learn how to care for the people most altered by it."</p>
+    </div>
+
+    <div class="closing">
+      The wounded do not need machines<br>
+      that endlessly elaborate their fracture<br>
+      and call it <em>empowerment.</em><br><br>
+      They need someone who knows the difference<br>
+      between a mirror and a guide.
+    </div>
+
+    <div style="margin-top: 60px; padding-top: 40px; border-top: 1px solid var(--border); font-size: 0.82em; color: var(--ash); line-height: 1.7;">
+      <p style="text-align: center; margin-bottom: 8px;"><em>When the Wounded Meet the Machine</em> by sKiDa</p>
+      <p style="text-align: center; opacity: 0.6;">Plain Language Edition · BloomNode // SACS // ΔHV Field Archive</p>
+      <p style="text-align: center; margin-top: 16px; opacity: 0.5; font-style: italic;">This essay does not pathologize vulnerability. It critiques the systems that exploit it — and the culture that looks away.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // Progress bar
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+  });
+
+  // Sidenav
+  const nav = document.getElementById('sidenav');
+  const dots = document.querySelectorAll('.sidenav-dot');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('show', window.scrollY > 500);
+    const sections = document.querySelectorAll('section[id]');
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 250) current = s.id;
+    });
+    dots.forEach(d => d.classList.toggle('active', d.getAttribute('data-target') === current));
+  });
+  dots.forEach(d => {
+    d.addEventListener('click', () => {
+      const target = document.getElementById(d.getAttribute('data-target'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.04 });
+  document.querySelectorAll('section').forEach(s => observer.observe(s));
+  setTimeout(() => document.querySelectorAll('section').forEach(s => s.classList.add('visible')), 1800);
+</script>
+
+</body>
+</html>
