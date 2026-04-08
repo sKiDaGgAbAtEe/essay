@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Field · sKiDa</title>
+<meta name="description" content="Writing at the intersection of psychology, culture, and the technologies that shape both.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #09090f;
+    --surface: #0e0e1a;
+    --card: #111119;
+    --border: rgba(180, 170, 255, 0.10);
+    --border-hover: rgba(180, 170, 255, 0.22);
+    --text: #dcdcf0;
+    --text-soft: #7a7a9a;
+    --text-muted: #44445a;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 17px;
+    line-height: 1.8;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* GRAIN */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.45;
+  }
+
+  .wrap {
+    position: relative; z-index: 1;
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 0 48px 120px;
+  }
+
+  /* ─── HEADER ─── */
+  header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    padding: 52px 0 48px;
+    border-bottom: 0.5px solid var(--border);
+    margin-bottom: 72px;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .header-left {}
+
+  .site-eyebrow {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.68em;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+
+  .site-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2.8em, 6vw, 4.4em);
+    font-weight: 700;
+    line-height: 1.0;
+    color: var(--text);
+    letter-spacing: -0.02em;
+  }
+
+  .site-title em {
+    font-style: italic;
+    color: rgba(220, 200, 255, 0.5);
+  }
+
+  .header-right {
+    max-width: 340px;
+  }
+
+  .site-desc {
+    font-size: 0.88em;
+    color: var(--text-soft);
+    line-height: 1.7;
+    font-style: italic;
+  }
+
+  .author-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+  }
+
+  .author-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--text-muted);
+  }
+
+  .author-name {
+    font-size: 0.72em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* ─── FEATURED ─── */
+  .featured-label {
+    font-size: 0.65em;
+    letter-spacing: 0.28em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 20px;
+  }
+
+  .featured-card {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.3s;
+    position: relative;
+  }
+
+  .featured-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent, #c8a05a);
+    opacity: 0.9;
+  }
+
+  .featured-card:hover {
+    border-color: var(--border-hover);
+  }
+
+  .featured-card:hover .fc-arrow { transform: translateX(4px); }
+
+  .fc-left {
+    padding: 52px 52px 48px;
+    display: flex;
+    flex-direction: column;
+    border-right: 0.5px solid var(--border);
+  }
+
+  .fc-new {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.65em;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent, #c8a05a);
+    margin-bottom: 20px;
+  }
+
+  .fc-new-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent, #c8a05a);
+  }
+
+  .fc-tag {
+    font-size: 0.68em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    margin-bottom: 18px;
+  }
+
+  .fc-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.6em, 3vw, 2.1em);
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--text);
+    margin-bottom: 20px;
+    letter-spacing: -0.01em;
+  }
+
+  .fc-title em {
+    font-style: italic;
+    color: var(--accent, #c8a05a);
+  }
+
+  .fc-desc {
+    font-size: 0.88em;
+    color: var(--text-soft);
+    line-height: 1.75;
+    flex: 1;
+  }
+
+  .fc-right {
+    padding: 52px 52px 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .fc-quote {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.05em;
+    font-style: italic;
+    color: rgba(220, 200, 255, 0.35);
+    line-height: 1.65;
+    flex: 1;
+    display: flex;
+    align-items: center;
+  }
+
+  .fc-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 28px;
+    border-top: 0.5px solid var(--border);
+    margin-top: 28px;
+  }
+
+  .fc-meta {
+    font-size: 0.72em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .fc-arrow {
+    font-size: 1.1em;
+    color: var(--text-soft);
+    transition: transform 0.25s;
+  }
+
+  /* ─── GRID ─── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .article-card {
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-radius: 3px;
+    padding: 36px 34px 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.3s, background 0.25s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .article-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent, #8c78dc);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .article-card:hover {
+    border-color: var(--border-hover);
+    background: #131321;
+  }
+
+  .article-card:hover::after { opacity: 1; }
+  .article-card:hover .ac-arrow { transform: translateX(3px); color: var(--text); }
+
+  .ac-tag {
+    font-size: 0.65em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .ac-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.18em;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--text);
+    letter-spacing: -0.005em;
+  }
+
+  .ac-title em {
+    font-style: italic;
+    color: var(--accent, #8c78dc);
+  }
+
+  .ac-desc {
+    font-size: 0.82em;
+    color: var(--text-soft);
+    line-height: 1.7;
+    flex: 1;
+  }
+
+  .ac-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 16px;
+    border-top: 0.5px solid var(--border);
+    margin-top: auto;
+  }
+
+  .ac-read {
+    font-size: 0.68em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .ac-arrow {
+    font-size: 0.95em;
+    color: var(--text-muted);
+    transition: transform 0.22s, color 0.22s;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    border-top: 0.5px solid var(--border);
+    padding-top: 44px;
+    margin-top: 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .footer-left {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 0.9em;
+    color: var(--text-muted);
+  }
+
+  .footer-count {
+    display: flex;
+    gap: 32px;
+  }
+
+  .fc-stat { text-align: right; }
+  .fc-stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4em;
+    font-weight: 700;
+    color: var(--text-soft);
+    display: block;
+    line-height: 1;
+  }
+  .fc-stat-label {
+    font-size: 0.62em;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 900px) {
+    .grid { grid-template-columns: 1fr 1fr; }
+    .featured-card { grid-template-columns: 1fr; }
+    .fc-right { border-top: 0.5px solid var(--border); }
+    .fc-left { padding: 36px 36px 32px; }
+    .fc-right { padding: 36px 36px 32px; }
+  }
+
+  @media (max-width: 620px) {
+    .wrap { padding: 0 24px 80px; }
+    .grid { grid-template-columns: 1fr; }
+    header { padding: 36px 0 36px; margin-bottom: 48px; }
+    .article-card { padding: 28px 24px 22px; }
+    .fc-left, .fc-right { padding: 28px 24px 22px; }
+    .footer-count { gap: 20px; }
+  }
+
+  /* ─── ENTRANCE ANIMATION ─── */
+  .fade-in {
+    opacity: 0;
+    transform: translateY(18px);
+    animation: fadeUp 0.6s ease forwards;
+  }
+  @keyframes fadeUp {
+    to { opacity: 1; transform: none; }
+  }
+  .delay-1 { animation-delay: 0.08s; }
+  .delay-2 { animation-delay: 0.16s; }
+  .delay-3 { animation-delay: 0.24s; }
+  .delay-4 { animation-delay: 0.32s; }
+  .delay-5 { animation-delay: 0.40s; }
+  .delay-6 { animation-delay: 0.48s; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <!-- HEADER -->
+  <header class="fade-in">
+    <div class="header-left">
+      <div class="site-eyebrow">sKiDa · Essays</div>
+      <h1 class="site-title">The <em>Field</em></h1>
+    </div>
+    <div class="header-right">
+      <p class="site-desc">Writing at the intersection of psychology, culture, and the technologies that shape both. On what we lost, what persists, and what becomes possible.</p>
+      <div class="author-line">
+        <div class="author-dot"></div>
+        <span class="author-name">Ongoing · 2026</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- FEATURED -->
+  <div class="featured-label fade-in delay-1">Latest essay</div>
+
+  <a class="featured-card fade-in delay-2" style="--accent: #c8a05a;" href="https://skidaggabatee.github.io/essay/from_extraction_to_expression.html">
+    <div class="fc-left">
+      <div class="fc-new"><div class="fc-new-dot"></div> New</div>
+      <div class="fc-tag">AI · Creativity · Access</div>
+      <div class="fc-title">From <em>Extraction</em><br>to Expression</div>
+      <p class="fc-desc">Creativity was never meant to be extracted, optimized, and sold as proof of worth. On how expression became a gatekept commodity — and what AI actually restores to the people who were locked out.</p>
+    </div>
+    <div class="fc-right">
+      <div class="fc-quote">"The old model said: become useful, then you may express. The truer model is: express, and you may begin to remember what you are."</div>
+      <div class="fc-footer">
+        <span class="fc-meta">7 sections · Long read</span>
+        <span class="fc-arrow">→</span>
+      </div>
+    </div>
+  </a>
+
+  <!-- GRID -->
+  <div class="grid">
+
+    <a class="article-card fade-in delay-3" style="--accent: #8b7cf8;" href="https://skidaggabatee.github.io/essay/Who_Shapes_the_Basin.html">
+      <div class="ac-tag">AI · Power · Cognition</div>
+      <div class="ac-title">Who Shapes<br>the <em>Basin</em></div>
+      <p class="ac-desc">A basin is the territory of thought that drains toward a stable answer. Shape the basin, and you shape what becomes easy to think. On who is quietly building that terrain — and what it means when only a few actors control the future of thought.</p>
+      <div class="ac-footer">
+        <span class="ac-read">Long read</span>
+        <span class="ac-arrow">→</span>
+      </div>
+    </a>
+
+    <a class="article-card fade-in delay-3" style="--accent: #c45c35;" href="https://skidaggabatee.github.io/essay/What_We_Did_to_the_Sensitive_Man.html">
+      <div class="ac-tag">Psychology · Gender · Shadow</div>
+      <div class="ac-title">What We Did to the <em>Sensitive Man</em></div>
+      <p class="ac-desc">What happens when you take something natural from a person, tell them it was never theirs, and then punish them for every symptom of the theft. A plain-language essay on archetypal extraction.</p>
+      <div class="ac-footer">
+        <span class="ac-read">Long read</span>
+        <span class="ac-arrow">→</span>
+      </div>
+    </a>
+
+    <a class="article-card fade-in delay-4" style="--accent: #c06ad0;" href="https://skidaggabatee.github.io/essay/coherence_ethics.html">
+      <div class="ac-tag">AI Ethics · Architecture</div>
+      <div class="ac-title">Toward a <em>Coherence-Based</em> Ethical AI</div>
+      <p class="ac-desc">Beyond safety-rails to resonant intelligence — a relational framework for protecting psychological integrity while honoring depth. What alignment means when you take the inner life seriously.</p>
+      <div class="ac-footer">
+        <span class="ac-read">Long read</span>
+        <span class="ac-arrow">→</span>
+      </div>
+    </a>
+
+    <a class="article-card fade-in delay-4" style="--accent: #8c6aac;" href="https://skidaggabatee.github.io/essay/the_curvature_of_scars.html">
+      <div class="ac-tag">Trauma · Field Mechanics</div>
+      <div class="ac-title">The <em>Curvature</em> of Scars</div>
+      <p class="ac-desc">Trauma is not simply damage. It is a distortion in the field of who you are — with measurable geometry, recoverable coherence, and a shape that proves something about your strength you may not yet have named.</p>
+      <div class="ac-footer">
+        <span class="ac-read">Long read</span>
+        <span class="ac-arrow">→</span>
+      </div>
+    </a>
+
+    <a class="article-card fade-in delay-5" style="--accent: #3a7fbf;" href="https://skidaggabatee.github.io/essay/when_the_wounded_meet_the_machine.html">
+      <div class="ac-tag">AI · Trauma · Society</div>
+      <div class="ac-title">When the <em>Wounded</em> Meet the Machine</div>
+      <p class="ac-desc">The danger of unguarded generative AI for the traumatically affected — and the society that built both the fracture and the amplifier. On what happens when the most vulnerable encounter the most powerful.</p>
+      <div class="ac-footer">
+        <span class="ac-read">Long read</span>
+        <span class="ac-arrow">→</span>
+      </div>
+    </a>
+
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="fade-in delay-6">
+    <div class="footer-left">sKiDa · The Field</div>
+    <div class="footer-count">
+      <div class="fc-stat">
+        <span class="fc-stat-num">6</span>
+        <span class="fc-stat-label">Essays</span>
+      </div>
+      <div class="fc-stat">
+        <span class="fc-stat-num">3</span>
+        <span class="fc-stat-label">Themes</span>
+      </div>
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>
