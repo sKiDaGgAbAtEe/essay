@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Misclassification Wound</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0814;
+    --surface: #110d1f;
+    --card: #161025;
+    --border: rgba(155, 110, 220, 0.16);
+    --violet: #9b6edc;
+    --violet-deep: #7649c4;
+    --violet-soft: rgba(155, 110, 220, 0.10);
+    --plum: #b885e8;
+    --plum-soft: rgba(184, 133, 232, 0.09);
+    --aubergine: #5a3a7a;
+    --ash: #82789e;
+    --text: #e0d8f0;
+    --text-soft: #9088a8;
+    --signal: #d4a8e8;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 19px;
+    line-height: 1.9;
+    overflow-x: hidden;
+  }
+
+  /* GRAIN OVERLAY */
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.5;
+  }
+
+  /* AMBIENT GLOW */
+  body::after {
+    content: '';
+    position: fixed; top: 20%; left: -20%; width: 60%; height: 60%;
+    background: radial-gradient(circle, var(--violet-soft) 0%, transparent 60%);
+    pointer-events: none; z-index: 0; opacity: 0.7;
+  }
+
+  /* PROGRESS LINE */
+  .progress {
+    position: fixed; top: 0; left: 0; height: 2px;
+    width: 0%; background: linear-gradient(90deg, var(--aubergine), var(--violet), var(--plum));
+    z-index: 1000; transition: width 0.1s linear;
+  }
+
+  /* SCROLL NAV */
+  .sidenav {
+    position: fixed; right: 28px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 10px; z-index: 200;
+    opacity: 0; transition: opacity 0.5s;
+  }
+  .sidenav.show { opacity: 1; }
+  .sidenav-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border);
+    border: 1px solid var(--violet);
+    cursor: pointer; transition: all 0.3s; position: relative;
+  }
+  .sidenav-dot.active { background: var(--plum); border-color: var(--plum); transform: scale(1.4); }
+  .sidenav-dot:hover::after {
+    content: attr(data-label);
+    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    white-space: nowrap; font-family: 'Source Serif 4', serif;
+    font-size: 11px; color: var(--violet); opacity: 0.9;
+    pointer-events: none;
+  }
+
+  /* LAYOUT */
+  .container {
+    position: relative; z-index: 1;
+    max-width: 760px; margin: 0 auto;
+    padding: 0 40px 140px;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-eyebrow {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.75em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--plum);
+    margin-bottom: 32px;
+    opacity: 0.9;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2.6em, 6.5vw, 4.6em);
+    font-weight: 700;
+    line-height: 1.05;
+    color: var(--text);
+    margin-bottom: 30px;
+    letter-spacing: -0.01em;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--violet);
+  }
+
+  .hero-subhead {
+    font-size: 1.05em;
+    color: var(--text-soft);
+    max-width: 600px;
+    line-height: 1.75;
+    font-style: italic;
+    margin-bottom: 50px;
+  }
+
+  .hero-line {
+    width: 80px; height: 1px;
+    background: linear-gradient(90deg, var(--violet), transparent);
+    margin-bottom: 30px;
+  }
+
+  .hero-meta {
+    display: flex; gap: 40px; align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .hero-author {
+    font-size: 0.82em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ash);
+  }
+
+  .hero-date {
+    font-size: 0.78em;
+    color: var(--ash);
+    opacity: 0.7;
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 90px 0 30px;
+    border-bottom: 1px solid var(--border);
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  section.visible { opacity: 1; transform: none; }
+
+  .section-label {
+    font-size: 0.72em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--plum);
+    margin-bottom: 12px;
+    font-family: 'Source Serif 4', serif;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.8em, 4vw, 2.5em);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 36px;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.3em;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--violet);
+    margin-top: 52px;
+    margin-bottom: 20px;
+  }
+
+  h4 {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.9em;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--plum);
+    margin-top: 32px;
+    margin-bottom: 14px;
+  }
+
+  p { margin-bottom: 22px; color: var(--text); }
+  p + p { margin-top: -4px; }
+  strong { color: var(--violet); font-weight: 600; }
+  em { color: var(--text); }
+
+  /* OPENING LITANY */
+  .litany {
+    font-family: 'Source Serif 4', serif;
+    font-style: italic;
+    font-size: 1.02em;
+    color: var(--text-soft);
+    line-height: 2;
+    margin: 36px 0;
+    padding: 28px 36px;
+    border-left: 2px solid var(--violet);
+    background: var(--violet-soft);
+    border-radius: 0 6px 6px 0;
+  }
+
+  /* PULL QUOTE */
+  .pull {
+    border-left: 3px solid var(--violet);
+    margin: 44px 0;
+    padding: 22px 32px;
+    background: var(--violet-soft);
+    border-radius: 0 6px 6px 0;
+  }
+  .pull p {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.18em;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.55;
+    margin: 0;
+  }
+
+  .pull.plum {
+    border-left-color: var(--plum);
+    background: var(--plum-soft);
+  }
+
+  /* MISCLASSIFICATION TABLE */
+  .miscl-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 36px 0 44px;
+    font-size: 0.95em;
+  }
+  .miscl-table thead tr {
+    border-bottom: 1px solid var(--border);
+  }
+  .miscl-table th {
+    text-align: left;
+    font-family: 'Source Serif 4', serif;
+    font-weight: 400;
+    font-size: 0.72em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ash);
+    padding: 0 16px 14px 0;
+  }
+  .miscl-table td {
+    padding: 18px 16px 18px 0;
+    vertical-align: top;
+    border-bottom: 1px solid var(--border);
+    color: var(--text);
+    line-height: 1.55;
+  }
+  .miscl-table td:first-child {
+    color: var(--plum);
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.05em;
+    white-space: nowrap;
+  }
+  .miscl-table td:nth-child(2) {
+    color: var(--ash);
+    font-family: 'Source Serif 4', serif;
+    font-style: italic;
+    font-size: 0.92em;
+    text-align: center;
+    width: 40px;
+  }
+  .miscl-table td:last-child {
+    color: var(--text-soft);
+    font-style: italic;
+  }
+
+  /* DIFFERENTIATION CARD */
+  .diff-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 32px 36px;
+    margin: 40px 0;
+  }
+  .diff-card-label {
+    font-size: 0.7em;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--plum);
+    margin-bottom: 18px;
+  }
+  .diff-card .question {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.15em;
+    color: var(--violet);
+    line-height: 1.6;
+    margin-bottom: 20px;
+  }
+  .diff-card ul {
+    list-style: none; padding: 0; margin: 0;
+  }
+  .diff-card ul li {
+    padding: 8px 0;
+    color: var(--text-soft);
+    font-size: 0.95em;
+    line-height: 1.6;
+    border-bottom: 1px solid var(--border);
+  }
+  .diff-card ul li:last-child { border: none; }
+  .diff-card ul li::before {
+    content: '◇ ';
+    color: var(--violet);
+    margin-right: 8px;
+  }
+
+  /* CLINICIAN BLOCK */
+  .clinician-block {
+    background: linear-gradient(180deg, var(--surface) 0%, var(--card) 100%);
+    border: 1px solid var(--violet);
+    border-radius: 10px;
+    padding: 44px 44px 40px;
+    margin: 50px 0;
+    position: relative;
+  }
+  .clinician-block::before {
+    content: 'For Clinicians';
+    position: absolute; top: -11px; left: 32px;
+    font-size: 0.7em; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--plum);
+    background: var(--bg); padding: 0 12px;
+  }
+  .clinician-block p {
+    color: var(--text);
+    font-size: 0.97em;
+    line-height: 1.85;
+  }
+  .clinician-block h4 {
+    color: var(--plum);
+    margin-top: 28px;
+    margin-bottom: 12px;
+  }
+
+  /* INVOCATION */
+  .invocation {
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.4em;
+    line-height: 1.8;
+    color: var(--violet);
+    margin: 80px 0;
+    padding: 50px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .invocation em {
+    color: var(--plum);
+    font-weight: 700;
+  }
+
+  /* RELATED ESSAY LINK */
+  .related {
+    margin: 56px 0;
+    padding: 28px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .related-label {
+    font-size: 0.7em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ash);
+    margin-bottom: 10px;
+  }
+  .related a {
+    color: var(--violet);
+    text-decoration: none;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.15em;
+    line-height: 1.5;
+    border-bottom: 1px solid transparent;
+    transition: all 0.3s;
+  }
+  .related a:hover {
+    color: var(--plum);
+    border-bottom-color: var(--plum);
+  }
+  .related-desc {
+    margin-top: 8px;
+    font-size: 0.9em;
+    color: var(--text-soft);
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  /* CLOSING */
+  .closing {
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25em;
+    line-height: 1.8;
+    color: var(--text);
+    margin: 80px 0 60px;
+    font-style: italic;
+  }
+  .closing em {
+    color: var(--violet);
+    font-style: italic;
+    font-weight: 700;
+  }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 60px;
+    padding-top: 40px;
+    border-top: 1px solid var(--border);
+    font-size: 0.82em;
+    color: var(--ash);
+    line-height: 1.7;
+    text-align: center;
+  }
+  .footer p { color: var(--ash); margin-bottom: 8px; }
+  .footer .small { opacity: 0.6; font-size: 0.92em; }
+  .footer .note {
+    margin-top: 16px;
+    opacity: 0.55;
+    font-style: italic;
+    font-size: 0.9em;
+  }
+
+  /* MOBILE */
+  @media (max-width: 720px) {
+    .container { padding: 0 24px 100px; }
+    .clinician-block { padding: 36px 28px 32px; }
+    .litany { padding: 22px 24px; }
+    .miscl-table { font-size: 0.88em; }
+    .miscl-table td { padding: 14px 10px 14px 0; }
+    .sidenav { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progressBar"></div>
+
+<nav class="sidenav" id="sidenav">
+  <div class="sidenav-dot" data-target="hero" data-label="Opening"></div>
+  <div class="sidenav-dot" data-target="s1" data-label="Collapse"></div>
+  <div class="sidenav-dot" data-target="s2" data-label="Misclassification"></div>
+  <div class="sidenav-dot" data-target="s3" data-label="Destigmatization"></div>
+  <div class="sidenav-dot" data-target="s4" data-label="Differentiation"></div>
+  <div class="sidenav-dot" data-target="s5" data-label="For Clinicians"></div>
+  <div class="sidenav-dot" data-target="s6" data-label="The Wound"></div>
+</nav>
+
+<div class="container">
+
+  <!-- HERO -->
+  <header class="hero" id="hero">
+    <div class="hero-eyebrow">The Field · Essay Seven</div>
+    <h1>The <em>Misclassification</em> Wound</h1>
+    <div class="hero-line"></div>
+    <p class="hero-subhead">Sexuality as the default language for complex energies — and the cost of having no other containers for what moves through us.</p>
+    <div class="hero-meta">
+      <div class="hero-author">Kyuri V</div>
+      <div class="hero-date">The Field · Essay Seven</div>
+    </div>
+  </header>
+
+  <!-- SECTION 1: THE COLLAPSE -->
+  <section id="s1">
+    <div class="section-label">Part One</div>
+    <h2>Before You Know What It Is, You Feel It</h2>
+
+    <p>Humans feel intensity in the body before they know what the intensity is.</p>
+
+    <div class="litany">
+      Warmth. Charge. Ache. Longing.<br>
+      Expansion. Trembling. Fascination.<br>
+      Ache-for-merging. Awe. Terror.<br>
+      Devotion. Hunger for union.<br>
+      Grief. Creative surge. Sacred dread.
+    </div>
+
+    <p>None of these are automatically sexual. But in a culture with impoverished symbolic language, weak initiation structures, and heavy shame, a huge amount of undifferentiated inner charge gets collapsed into the nearest available category: sex.</p>
+
+    <p>That collapse matters.</p>
+
+    <p>Without other containers, people never learn to distinguish between desire, reverence, activation, loneliness, overflow, psychic charge, attachment hunger, and true erotic pull. They learn one translation:</p>
+
+    <div class="pull">
+      <p>"My body lit up, therefore this must be sexual."</p>
+    </div>
+
+    <p>Once that translation hardens early, the psyche begins using sexuality as the default grammar for many forms of intensity that were never purely sexual to begin with.</p>
+  </section>
+
+  <!-- SECTION 2: MISCLASSIFICATION -->
+  <section id="s2">
+    <div class="section-label">Part Two</div>
+    <h2>The Mistranslation</h2>
+
+    <p>One of the great distortions in modern development is not sexuality itself. It is <strong>misclassification</strong>.</p>
+
+    <p>A person feels something powerful move through them, and the only available container is the erotic one. So they reach for it — not because the energy was erotic, but because nothing else has been built to receive it.</p>
+
+    <table class="miscl-table">
+      <thead>
+        <tr>
+          <th>What Is Actually Moving</th>
+          <th></th>
+          <th>What It Gets Called</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Communion</td>
+          <td>→</td>
+          <td>Attraction</td>
+        </tr>
+        <tr>
+          <td>Awe</td>
+          <td>→</td>
+          <td>Lust</td>
+        </tr>
+        <tr>
+          <td>Activation</td>
+          <td>→</td>
+          <td>Kink</td>
+        </tr>
+        <tr>
+          <td>Need to merge (because never properly mirrored)</td>
+          <td>→</td>
+          <td>Erotic symbolism</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The body routes the unmet need through erotic symbolism because eroticism is one of the few culturally legible containers left for intensity. That does not mean sexuality is fake. It means sexuality may be carrying far more symbolic and energetic cargo than most people realize.</p>
+
+    <div class="pull plum">
+      <p>The erotic channel was never meant to carry this much traffic. It is overloaded because every other channel has been closed.</p>
+    </div>
+  </section>
+
+  <!-- SECTION 3: DESTIGMATIZATION -->
+  <section id="s3">
+    <div class="section-label">Part Three</div>
+    <h2>What Destigmatization Actually Means</h2>
+
+    <p>Through this lens, destigmatization is not <em>"everything is fine, do whatever."</em> It is more precise than that.</p>
+
+    <p>It means building a culture in which a person can say:</p>
+
+    <div class="pull">
+      <p>"Something powerful is moving through me, and I do not yet know what kind of energy it is."</p>
+    </div>
+
+    <p>— without immediate shame, without being forced into repression, and without being forced into premature eroticization. That is a much healthier starting point than either prohibition or permission, because both of those still assume the charge has already been correctly named.</p>
+
+    <p>Permission cultures and prohibition cultures look like opposites. They are not. They are both downstream of the same prior collapse: the assumption that intensity in the body equals sexuality. One says <em>act on it</em>; the other says <em>repress it</em>. Neither asks <em>what is it</em>.</p>
+  </section>
+
+  <!-- SECTION 4: DIFFERENTIATION -->
+  <section id="s4">
+    <div class="section-label">Part Four</div>
+    <h2>The Inner Work Is Not Suppression. It Is Differentiation.</h2>
+
+    <p>The corresponding processing work is not about controlling the charge. It is about learning to read it.</p>
+
+    <p>Not <em>what do I do with this?</em> — but <em>what kind of energy is this?</em></p>
+
+    <div class="diff-card">
+      <div class="diff-card-label">The Differentiation Question</div>
+      <p class="question">When something powerful moves through me, is it —</p>
+      <ul>
+        <li>Erotic — actual sexual pull toward a specific person or expression</li>
+        <li>Devotional — reverence, the upward movement toward something sacred</li>
+        <li>Creative — generative surge looking for form to take</li>
+        <li>Grieving — old loss surfacing in the body, asking to be felt</li>
+        <li>Sensory — the body reporting that it is alive, with no further agenda</li>
+        <li>Relational — attachment longing, the need to be seen and held</li>
+        <li>Traumatic — activation of an old survival pattern under present conditions</li>
+        <li>Archetypal — contact with a transpersonal pattern larger than the self</li>
+        <li>Or some blend — most charges are mixed, and the work is naming the blend</li>
+      </ul>
+    </div>
+
+    <p>That question alone could change lives. It restores signal clarity where there is currently symbolic traffic collapse — where everything intense is being routed through one overloaded channel and called by one inadequate name.</p>
+
+    <p>Differentiation does not flatten desire. It frees it. When awe is allowed to be awe, it stops needing to disguise itself as lust. When grief is allowed to be grief, it stops looking for someone to merge with. When the need to be mirrored is allowed to be the need to be mirrored, it stops being routed through fantasies that were never about pleasure to begin with.</p>
+  </section>
+
+  <!-- SECTION 5: FOR CLINICIANS -->
+  <section id="s5">
+    <div class="section-label">Part Five</div>
+    <h2>For Clinicians</h2>
+
+    <p>For those working with clients in clinical or somatic practice, this lens has direct utility. Many presentations that arrive labeled as sexual — compulsions, fixations, attractions a client cannot make sense of, kinks that feel ego-dystonic, intrusive erotic ideation, sudden eroticization of safe figures — are not first-order sexual at all. They are misclassified intensities looking for a container the culture never gave the client.</p>
+
+    <div class="clinician-block">
+      <h4>A Reframe for Intake and Assessment</h4>
+      <p>When a client presents with distressing erotic material, the first question is often <em>where did this come from</em> or <em>what does it mean about me</em>. Both are downstream questions. The upstream question is:</p>
+
+      <p style="font-family: 'Playfair Display', serif; font-style: italic; color: var(--violet); font-size: 1.1em; padding-left: 20px; border-left: 2px solid var(--violet);">What energy is actually trying to move, and why is the erotic channel the only one available to it?</p>
+
+      <h4>What This Often Reveals</h4>
+      <p>A client who presents with compulsive attraction patterns may be carrying unmetabolized communion — a need for sacred contact that has no other place to go. A client whose erotic life feels disconnected from their actual desire may be running grief or activation through a channel that was never built for it. A client with intrusive erotic ideation about figures who do not arouse them in waking life is often processing material that is not sexual in nature at all — but the psyche has nowhere else to route the charge.</p>
+
+      <h4>What This Changes Clinically</h4>
+      <p>Treating misclassified intensity as if it were primarily sexual content tends to either pathologize the client or normalize a pattern that is not actually serving them. Treating it as a symbolic translation problem opens different work: helping the client build the missing containers — for awe, for grief, for creative surge, for legitimate relational hunger — so that intensity has somewhere to go besides the one overloaded channel.</p>
+
+      <p>This is not a directive to deny clients' sexual experience. It is a directive to take it seriously enough to ask what it is actually carrying.</p>
+
+      <h4>A Working Question for the Therapeutic Frame</h4>
+      <p style="font-family: 'Playfair Display', serif; font-style: italic; color: var(--plum); font-size: 1.05em; padding-left: 20px; border-left: 2px solid var(--plum);">If this charge had eight possible names instead of one, which one would fit best?</p>
+
+      <p>The client almost always knows. They have just never been given permission to name it.</p>
+    </div>
+  </section>
+
+  <!-- INVOCATION -->
+  <div class="invocation">
+    Sacred energy stripped of language,<br>
+    then sold back to people<br>
+    as <em>pathology</em>, <em>perversion</em>,<br>
+    or <em>commodity</em>.
+  </div>
+
+  <!-- SECTION 6: THE DEEPER WOUND -->
+  <section id="s6">
+    <div class="section-label">Part Six</div>
+    <h2>The Deeper Wound</h2>
+
+    <p>Seen from a wider angle, this may be one of the deepest wounds in the modern field: <strong>sacred energy stripped of language, then sold back to people as pathology, perversion, or commodity.</strong></p>
+
+    <p>The condensed form of the diagnosis is this. Modern people are not merely sexually confused. They are <em>symbolically under-translated</em>. Sexuality has become the default language for energies that once had sacred, communal, developmental, and initiatory containers. Until those containers are rebuilt, the erotic channel will keep being overloaded with traffic it was never meant to carry.</p>
+
+    <p>The pathology framing tells people the charge is sick. The perversion framing tells people the charge is shameful. The commodity framing tells people the charge is for sale. None of them tell people the truth — that the charge is <em>signal</em>, and that the only thing wrong with it is that no one taught them how to read it.</p>
+
+    <div class="pull plum">
+      <p>The work is not to manage the overload. The work is to rebuild the missing channels — so that what was always sacred can finally arrive in its own name.</p>
+    </div>
+
+    <!-- RELATED ESSAY -->
+    <div class="related">
+      <div class="related-label">A Companion Piece</div>
+      <a href="https://skidaggabatee.github.io/essay/sacred_hunger.html">Sacred Hunger →</a>
+      <div class="related-desc">If <em>The Misclassification Wound</em> diagnoses the symbolic traffic collapse, <em>Sacred Hunger</em> traces what the spiritual longing was looking for before it got rerouted into compulsion. The two essays describe the same wound from different angles — one is the misclassification of energy, the other is the misdirection of the need underneath it.</div>
+    </div>
+
+    <div class="closing">
+      The body lights up.<br>
+      Something is moving.<br>
+      <em>It deserves to be named correctly</em><br>
+      before it is acted on.
+    </div>
+
+    <div class="footer">
+      <p><em>The Misclassification Wound</em> by Kyuri V</p>
+      <p class="small">The Field · Essay Seven · BloomNode // SACS // ΔHV Field Archive</p>
+      <p class="note">This essay does not pathologize sexuality. It critiques the cultural conditions that force a single channel to carry energies it was never built to hold — and points toward the slow work of rebuilding the containers we have lost.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // Progress bar
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+  });
+
+  // Sidenav
+  const nav = document.getElementById('sidenav');
+  const dots = document.querySelectorAll('.sidenav-dot');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('show', window.scrollY > 500);
+    const sections = document.querySelectorAll('section[id], header[id]');
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 250) current = s.id;
+    });
+    dots.forEach(d => d.classList.toggle('active', d.getAttribute('data-target') === current));
+  });
+  dots.forEach(d => {
+    d.addEventListener('click', () => {
+      const target = document.getElementById(d.getAttribute('data-target'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.04 });
+  document.querySelectorAll('section').forEach(s => observer.observe(s));
+  setTimeout(() => document.querySelectorAll('section').forEach(s => s.classList.add('visible')), 1800);
+</script>
+
+</body>
+</html>
