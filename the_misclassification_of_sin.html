@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Misclassification of Sin — sKiDa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Source+Serif+4:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a090e;
+    --surface: #0f0e17;
+    --card: #13121c;
+    --border: rgba(168, 89, 110, 0.12);
+    --rose: #a8596e;
+    --rose-soft: rgba(168, 89, 110, 0.09);
+    --bone: #c8b8a0;
+    --bone-soft: rgba(200, 184, 160, 0.08);
+    --slate: #7a8a9a;
+    --slate-soft: rgba(122, 138, 154, 0.08);
+    --ash: #6a6878;
+    --text: #ddd8d0;
+    --text-soft: #8a8480;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 19px;
+    line-height: 1.95;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.55;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; top: -200px; right: -100px;
+    width: 700px; height: 700px;
+    background: radial-gradient(circle, rgba(168,89,110,0.035) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .progress {
+    position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+    background: linear-gradient(90deg, var(--rose), var(--bone), var(--slate));
+    z-index: 1000; transition: width 0.1s linear;
+  }
+
+  .sidenav {
+    position: fixed; right: 28px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 10px; z-index: 200;
+    opacity: 0; transition: opacity 0.5s;
+  }
+  .sidenav.show { opacity: 1; }
+  .sidenav-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border); border: 1px solid var(--rose);
+    cursor: pointer; transition: all 0.3s; position: relative;
+  }
+  .sidenav-dot.active { background: var(--rose); border-color: var(--rose); transform: scale(1.4); }
+  .sidenav-dot:hover::after {
+    content: attr(data-label);
+    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    white-space: nowrap; font-family: 'Source Serif 4', serif;
+    font-size: 11px; color: var(--rose); opacity: 0.85;
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative; z-index: 1;
+    max-width: 760px; margin: 0 auto;
+    padding: 0 40px 140px;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-eyebrow {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.75em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--rose);
+    margin-bottom: 32px;
+    opacity: 0.85;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2.8em, 6.5vw, 5em);
+    font-weight: 700;
+    line-height: 1.05;
+    color: var(--text);
+    margin-bottom: 30px;
+    letter-spacing: -0.02em;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--rose);
+  }
+
+  .hero-subhead {
+    font-size: 1.05em;
+    color: var(--text-soft);
+    max-width: 580px;
+    line-height: 1.8;
+    font-style: italic;
+    margin-bottom: 50px;
+  }
+
+  .hero-line {
+    width: 80px; height: 1px;
+    background: linear-gradient(90deg, var(--rose), transparent);
+    margin-bottom: 30px;
+  }
+
+  .hero-author {
+    font-size: 0.82em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ash);
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 90px 0 30px;
+    border-bottom: 1px solid var(--border);
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  section.visible { opacity: 1; transform: none; }
+
+  .section-label {
+    font-size: 0.72em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--rose);
+    margin-bottom: 12px;
+    font-family: 'Source Serif 4', serif;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.7em, 3.8vw, 2.5em);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 36px;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.3em;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--rose);
+    margin-top: 52px;
+    margin-bottom: 20px;
+  }
+
+  p { margin-bottom: 22px; color: var(--text); }
+  p + p { margin-top: -4px; }
+  strong { color: var(--rose); font-weight: 600; }
+
+  /* PULL QUOTES */
+  .pull {
+    border-left: 3px solid var(--rose);
+    margin: 44px 0;
+    padding: 20px 30px;
+    background: var(--rose-soft);
+    border-radius: 0 6px 6px 0;
+  }
+  .pull p {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.22em;
+    font-style: italic;
+    color: var(--rose);
+    line-height: 1.65;
+    margin: 0;
+  }
+  .pull.bone {
+    border-left-color: var(--bone);
+    background: var(--bone-soft);
+  }
+  .pull.bone p { color: var(--bone); }
+  .pull.slate {
+    border-left-color: var(--slate);
+    background: var(--slate-soft);
+  }
+  .pull.slate p { color: var(--slate); }
+
+  /* CURRENT GRID — the seven distorted currents */
+  .current-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2px;
+    margin: 52px 0;
+  }
+  .current-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 28px 30px;
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 0 28px;
+    align-items: baseline;
+    transition: border-color 0.3s;
+  }
+  .current-card:hover { border-color: var(--rose); }
+  .current-name {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 1.05em;
+    color: var(--text);
+  }
+  .current-begins {
+    font-size: 0.82em;
+    color: var(--rose);
+    margin-top: 2px;
+    font-style: italic;
+  }
+  .current-body p {
+    font-size: 0.92em;
+    color: var(--text-soft);
+    line-height: 1.7;
+    margin: 0;
+  }
+
+  /* LENS SPLIT — comparison */
+  .lens-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin: 44px 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .lens-side {
+    padding: 34px 30px;
+    background: var(--card);
+  }
+  .lens-side:first-child { border-right: 1px solid var(--border); }
+  .lens-label {
+    font-size: 0.68em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    font-family: 'Source Serif 4', serif;
+  }
+  .lens-label.old { color: var(--ash); }
+  .lens-label.new { color: var(--rose); }
+  .lens-side p {
+    font-size: 0.9em;
+    color: var(--text-soft);
+    line-height: 1.65;
+    margin: 0 0 10px;
+  }
+  .lens-side p:last-child { margin: 0; }
+
+  /* CLOSING INVOCATION */
+  .closing-invocation {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.15em;
+    font-style: italic;
+    color: var(--rose);
+    line-height: 1.85;
+    margin-top: 52px;
+    padding-top: 52px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .divider {
+    text-align: center;
+    padding: 48px 0 0;
+    color: var(--ash);
+    font-size: 0.75em;
+    letter-spacing: 0.3em;
+    opacity: 0.4;
+  }
+
+  .back-button {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 16px;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    color: var(--rose);
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--rose);
+    border-radius: 6px;
+    font-family: 'Source Serif 4', serif;
+    z-index: 9999;
+    backdrop-filter: blur(6px);
+    white-space: nowrap;
+  }
+  .back-button:hover {
+    background: rgba(168, 89, 110, 0.15);
+  }
+
+  @media (max-width: 700px) {
+    .container { padding: 0 24px 100px; }
+    .current-card { grid-template-columns: 1fr; gap: 8px; }
+    .lens-split { grid-template-columns: 1fr; }
+    .lens-side:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+    .sidenav { display: none; }
+    .hero { padding: 60px 0 40px; }
+  }
+</style>
+</head>
+<body>
+  <a href="./index.html" class="back-button">← Back</a>
+
+<div class="progress" id="progressBar"></div>
+
+<nav class="sidenav" id="sidenav">
+  <div class="sidenav-dot" data-target="s1" data-label="Currents"></div>
+  <div class="sidenav-dot" data-target="s2" data-label="The Wound"></div>
+  <div class="sidenav-dot" data-target="s3" data-label="What Was Said"></div>
+  <div class="sidenav-dot" data-target="s4" data-label="How Jesus Met Them"></div>
+  <div class="sidenav-dot" data-target="s5" data-label="Paul's Confession"></div>
+  <div class="sidenav-dot" data-target="s6" data-label="Distorted Currents"></div>
+  <div class="sidenav-dot" data-target="s7" data-label="Repentance"></div>
+  <div class="sidenav-dot" data-target="s8" data-label="Shame"></div>
+  <div class="sidenav-dot" data-target="s9" data-label="The Cost"></div>
+  <div class="sidenav-dot" data-target="s10" data-label="Closing"></div>
+</nav>
+
+<div class="container">
+
+  <div class="hero" id="hero">
+    <div class="hero-eyebrow">On Signal · Misclassification · Restoration</div>
+    <h1>The <em>Misclassification</em> of Sin</h1>
+    <div class="hero-subhead">
+      What if sin was never the disease? What if it was the symptom report — written in a language that no one had taught the organism to read?
+    </div>
+    <div class="hero-line"></div>
+    <div class="hero-author">sKiDa</div>
+  </div>
+
+  <!-- SECTION 1: CURRENTS BEFORE LANGUAGE -->
+  <section id="s1">
+    <div class="section-label">Part One</div>
+    <h2>Currents Before Language</h2>
+
+    <p>Human beings possess currents before they possess language.</p>
+
+    <p>We experience attachment, awe, longing, grief, reverence, protection, curiosity, surrender, creation, union, expansion. These are not ideas. They are not beliefs. They are not products of culture. They are movements inside the body that precede every conceptual system ever built to explain them.</p>
+
+    <p>A child does not learn to long. The child longs. A child does not decide to feel awe. Awe moves through them like weather. These currents are not metaphors for something else. They are the base material of a human life — the raw electrical language of the psyche, running long before anyone arrives with a dictionary.</p>
+
+    <p>And that is precisely where the problem begins.</p>
+
+    <p>Because before a person can learn to read their own currents, the culture reads them first. Names are given. Categories are assigned. Meanings are installed. And if the names are wrong — if the categories do not match the actual current — then the entire life built upon them becomes distorted. Not broken. <em>Misaligned</em>. Operating under a translation error that the person never consented to and may never detect.</p>
+
+    <div class="pull">
+      <p>"Before we know what our currents are, culture names them for us. If the names are wrong, the distortion begins before self-understanding has a chance to arrive."</p>
+    </div>
+
+    <p>This essay is about one of the most consequential naming errors in the history of Western civilization: the classification of sin.</p>
+
+    <p>Not because sin is imaginary. Because sin is <em>real</em> — and its reality has been buried under centuries of misclassification so thorough that even the people trying to escape the framework are still operating inside its distortion.</p>
+
+  </section>
+
+  <!-- SECTION 2: THE MISCLASSIFICATION WOUND -->
+  <section id="s2">
+    <div class="section-label">Part Two</div>
+    <h2>The Misclassification Wound</h2>
+
+    <p>A child feels enormous relational energy — an intensity of connection-seeking that saturates their nervous system. The culture says: <em>That's sexual.</em></p>
+
+    <p>A child feels fierce protective energy — a flash of boundary that rises in the body like heat. The culture says: <em>That's anger. Control it.</em></p>
+
+    <p>A child feels the desire to withdraw, to conserve, to disappear from a world that has become too loud. The culture says: <em>You're lazy.</em></p>
+
+    <p>A child feels profound longing — an ache for something they cannot name, something just past the edge of what is visible. The culture says: <em>You're needy. That's weakness.</em></p>
+
+    <p>In every case, the classification arrives before self-understanding. The name is installed before the person has any capacity to examine whether the name fits. And because children build their self-concept out of whatever language is offered to them, the misclassification does not remain external. It moves inside. It becomes identity.</p>
+
+    <div class="pull bone">
+      <p>"The wound is not that the child felt something dangerous. The wound is that the child was given the wrong name for what they felt — and then spent a lifetime managing the wrong problem."</p>
+    </div>
+
+    <p>This is the misclassification wound. Not the presence of difficult energy. The <em>mislabeling</em> of that energy at the point of origin. And once the label is installed, something catastrophic happens: the organism begins distrusting its own signals. It does not stop feeling the current. It stops believing the current is trustworthy. It learns to override, suppress, perform, or redirect — anything but listen.</p>
+
+    <p>Trauma, then, does not originate in the feeling. It originates in the naming. The current was always accurate. The translation was not.</p>
+
+  </section>
+
+  <!-- SECTION 3: WHAT THE BIBLE ACTUALLY SAID -->
+  <section id="s3">
+    <div class="section-label">Part Three</div>
+    <h2>What the Bible Actually Said</h2>
+
+    <p>The Hebrew word most commonly translated as "sin" — <em>ḥāṭā'</em> — does not mean <em>dirty</em>. It does not mean <em>guilty</em>. It does not mean <em>evil</em>. It means to miss. To fall short. To veer off course. To fail to reach the intended target. The word was used outside moral contexts entirely — an archer who missed the mark, a traveler who missed the road. The fundamental image is not of contamination. It is of <em>misalignment</em>.</p>
+
+    <p>The Greek <em>hamartia</em>, which carries the same freight in the New Testament, holds the same architecture: a failure to arrive, an error of trajectory, a departure from the pattern the thing was meant to follow.</p>
+
+    <p>In other words: the original scriptural language already contains the psyche-trauma reading. Sin is not being bad. Sin is being <em>off</em> — pulled out of congruence with one's deepest design, with source, with neighbor, with the body, with love. It is a distortion in the relational field, not a stain on a legal record.</p>
+
+    <p>But something happened between the original language and the institution that inherited it.</p>
+
+    <p>The relational concept was flattened into a legal concept. <em>Missing the mark</em> became <em>breaking the law</em>. <em>Falling out of alignment</em> became <em>incurring guilt</em>. And guilt requires a court. Courts require judges. Judges require authority. Authority requires institutions. And institutions require that the definition of the problem be the kind of problem only the institution can solve.</p>
+
+    <div class="pull slate">
+      <p>"The church did not invent the misclassification of sin. It inherited a classification error already present in the culture and systematized it — gave it infrastructure, enforcers, and centuries of repetition."</p>
+    </div>
+
+    <p>This is not an accusation. It is a diagnosis. The institutional church took a word that meant <em>you have fallen out of coherence with your own design</em> and turned it into a word that meant <em>you have committed a crime against a sovereign, and only our mediation can resolve the case</em>. That is a misclassification so profound that it reshaped Western consciousness for over a millennium.</p>
+
+    <p>And people who have no relationship to Christianity whatsoever still carry the residue. The shame architecture was built so deep that it outlasted the belief system that installed it. The secular West still feels guilt as a legal condition rather than a signal of misalignment. That is how total the translation error became.</p>
+
+  </section>
+
+  <!-- SECTION 4: HOW JESUS ACTUALLY MET "SINNERS" -->
+  <section id="s4">
+    <div class="section-label">Part Four</div>
+    <h2>How Jesus Actually Met "Sinners"</h2>
+
+    <p>Before any theological framework is applied, before Paul, before Augustine, before the councils and creeds — there is the pattern of what Jesus actually <em>did</em> when he encountered people the religious system had classified as sinners.</p>
+
+    <p>He did not begin with the classification.</p>
+
+    <p>The woman at the well was a Samaritan with a complicated relational history. The religious system had already filed her: unclean, outsider, morally compromised. Jesus sat down and asked her for water. He entered relationship before he addressed behavior. He treated her as a person with a thirst — her own kind of sacred hunger — and spoke to the thirst, not to the record.</p>
+
+    <p>The woman caught in adultery was brought to him as a legal exhibit — evidence of sin, demanding a verdict. The system wanted classification confirmed: guilty, punishable, resolved through violence. Jesus wrote in the dirt and said nothing. Then he dismissed the court. Then — only then — he spoke to her. Not with a verdict. With a direction: <em>go, and sin no more</em>. Which, if you hear the original word, means something closer to: <em>go, and stop missing</em>. Go, and find the mark again. Not a condemnation. A reorientation.</p>
+
+    <p>Zacchaeus was a tax collector — despised, classified as traitor and extortionist. Jesus did not confront him in the street. He invited himself to dinner. He restored social relationship <em>before</em> any behavioral change occurred. And Zacchaeus, from inside that restoration, voluntarily restructured his economic life. The transformation followed the relationship. Not the other way around.</p>
+
+    <div class="pull">
+      <p>"Jesus never began with the classification. He began with presence. The system said: name the sin first, then decide if the person deserves contact. Jesus reversed the sequence entirely."</p>
+    </div>
+
+    <p>This pattern is not incidental. It is the <em>method</em>. And it maps precisely onto what trauma-informed practice has spent decades discovering: that behavioral change does not precede relational safety. It follows it. You cannot ask a person to stop a protective behavior until you have provided something safer to protect them. The sequence matters. And the institutional church, for much of its history, inverted the sequence that its own founder demonstrated.</p>
+
+    <p>Name the sin. Require repentance. Verify compliance. Then — maybe — offer belonging.</p>
+
+    <p>Jesus did the opposite. Belong first. Then the rest becomes possible.</p>
+
+  </section>
+
+  <!-- SECTION 5: PAUL'S CONFESSION -->
+  <section id="s5">
+    <div class="section-label">Part Five</div>
+    <h2>Paul's Confession</h2>
+
+    <p>There is a passage in Paul's letter to the Romans that has been read for two thousand years as a confession of moral weakness. It is not.</p>
+
+    <p><em>"I do not do what I want to do, but I do what I hate."</em> — Romans 7:15</p>
+
+    <p>Read that again. Not as theology. As phenomenology. As a man describing, with terrible precision, the experience of <strong>divided agency</strong>.</p>
+
+    <p>This is not a person who lacks willpower. This is a person who is watching himself be overridden by something operating below the level of conscious choice. He knows what he wants. He cannot produce it. He knows what he hates. He produces it anyway. The part of him that wills and the part of him that acts have become two different systems.</p>
+
+    <p>In the language of modern trauma theory, this is dissociation. Not the dramatic kind — not the fugue states and identity fractures that dominate popular understanding. The ordinary kind. The kind that happens when a wounded part takes over the steering wheel and the observing self watches from the back seat, fully aware and completely unable to intervene. The kind that makes a person say, afterward, <em>I don't know why I did that.</em> Not because they are lying. Because they genuinely experienced themselves as two.</p>
+
+    <div class="pull bone">
+      <p>"Paul was not confessing moral failure. He was describing, with clinical precision, what it feels like when the psyche is fragmented — when the self that wills and the self that acts are no longer the same system."</p>
+    </div>
+
+    <p>Much of later Christian theology came to emphasize this passage as evidence of humanity's fundamental depravity — proof that human nature is so corrupted that only external intervention can rescue it. And there are Christian traditions that have always read it differently, emphasizing healing, participation, and restoration over inherited guilt. But the dominant Western reading has been the legal one: you are broken by nature, guilty by existence, and dependent on institutional mediation for any hope of wholeness.</p>
+
+    <p>Through the lens of this essay, what Paul describes is not depravity. It is fragmentation. And fragmentation has a cause. No organism divides itself voluntarily. Division happens when experience is too overwhelming to be held in a single coherent self. When pain must be isolated rather than integrated. When the body learns that certain currents are dangerous and builds walls inside itself to contain them.</p>
+
+    <p>Paul does not need a courtroom. He needs integration. The divided self needs to be gathered — not punished into compliance, but made safe enough to reconvene.</p>
+
+  </section>
+
+  <!-- SECTION 6: THE SEVEN DISTORTED CURRENTS -->
+  <section id="s6">
+    <div class="section-label">Part Six</div>
+    <h2>The Seven Distorted Currents</h2>
+
+    <p>The tradition of the "seven deadly sins" gave Western civilization a taxonomy of human failure. Pride, greed, lust, envy, gluttony, wrath, sloth — seven categories of badness, seven ways to be wrong, seven reasons to be ashamed.</p>
+
+    <p>But if sin is misalignment rather than evil — if it is the current going wrong rather than the person being wrong — then every one of these categories needs to be reexamined. Not dismissed. <em>Reread</em>. Because each one, traced to its origin, begins as something the organism genuinely needed. Something life-serving. Something that was never meant to become what it became.</p>
+
+    <div class="current-grid">
+      <div class="current-card">
+        <div>
+          <div class="current-name">Wrath</div>
+          <div class="current-begins">begins as protection</div>
+        </div>
+        <div class="current-body">
+          <p>The energy that rises to defend a boundary, to say <em>no</em>, to push back against violation. Wrath is what happens when that protective energy fires without coherence — without relationship, without proportion, without the ability to stop when the threat has passed. The current is not wrong. It lost its container.</p>
+        </div>
+      </div>
+      <div class="current-card">
+        <div>
+          <div class="current-name">Lust</div>
+          <div class="current-begins">begins as the search for union</div>
+        </div>
+        <div class="current-body">
+          <p>The longing to dissolve the boundary between self and other, to be known and held and entered. Lust is what happens when that longing detaches from relationship and becomes acquisition — when intimacy is replaced by consumption. The ache for union is real. The channel was substituted.</p>
+        </div>
+      </div>
+      <div class="current-card">
+        <div>
+          <div class="current-name">Greed</div>
+          <div class="current-begins">begins as stewardship</div>
+        </div>
+        <div class="current-body">
+          <p>The impulse to gather, to secure, to ensure that enough exists for survival and flourishing. Greed is stewardship distorted by the fear of insufficiency — by a scarcity that may have been real once and now runs on automatic. The gathering instinct was designed to serve life. It began hoarding when the organism stopped believing life was safe.</p>
+        </div>
+      </div>
+      <div class="current-card">
+        <div>
+          <div class="current-name">Pride</div>
+          <div class="current-begins">begins as dignity</div>
+        </div>
+        <div class="current-body">
+          <p>The knowledge that the self has worth, that it deserves to be seen, that it is not nothing. Pride is what happens when dignity has been so repeatedly humiliated that it armors itself into superiority. The person is not inflated. They are <em>defended</em>. The armor is not the wound. It is the response to a wound that was never treated.</p>
+        </div>
+      </div>
+      <div class="current-card">
+        <div>
+          <div class="current-name">Envy</div>
+          <div class="current-begins">begins as recognition</div>
+        </div>
+        <div class="current-body">
+          <p>The capacity to see in another person a quality, a life, a possibility that resonates with something inside the self that has not yet been lived. Envy is recognition expressed through comparison rather than aspiration. It is grief for the unlived self, wearing the face of resentment toward the person who lived it.</p>
+        </div>
+      </div>
+      <div class="current-card">
+        <div>
+          <div class="current-name">Gluttony</div>
+          <div class="current-begins">begins as nourishment-seeking</div>
+        </div>
+        <div class="current-body">
+          <p>The body's signal that it needs something — fuel, comfort, regulation, care. Gluttony is what happens when that signal is answered with the wrong substance, in the wrong quantity, because the right nourishment was never available or never named. The hunger is accurate. The feeding is off-target.</p>
+        </div>
+      </div>
+      <div class="current-card">
+        <div>
+          <div class="current-name">Sloth</div>
+          <div class="current-begins">begins as conservation</div>
+        </div>
+        <div class="current-body">
+          <p>The nervous system's protective withdrawal after repeated evidence that effort does not produce safety. Sloth is not laziness. It is collapse. The organism that has been defeated enough times stops extending itself — not from indifference, but from a learned certainty that extension will not be rewarded. The system is not broken. It is conserving what little remains.</p>
+        </div>
+      </div>
+    </div>
+
+    <p>Read them together and something emerges that the traditional framework could never see: <strong>none of these originate as evil</strong>. Every single one begins as something the organism needed. Protection. Union. Provision. Dignity. Recognition. Nourishment. Conservation. These are not vices. They are survival capacities. They are life-serving energies that overshoot their purpose when the conditions that shaped them become unbearable.</p>
+
+    <p>The seven deadly sins are not seven types of badness. They are seven protective adaptations that lost coherence.</p>
+
+    <div class="pull">
+      <p>"Every 'sin' is a current that began as something life-serving. It did not become destructive because the person was evil. It became destructive because the conditions that shaped it made coherence impossible."</p>
+    </div>
+
+  </section>
+
+  <!-- SECTION 7: REPENTANCE REFRAMED -->
+  <section id="s7">
+    <div class="section-label">Part Seven</div>
+    <h2>Repentance Reframed</h2>
+
+    <p>If sin is misalignment, then repentance cannot be what the institution made it: a guilty plea, a performance of contrition, a transaction where shame is exchanged for conditional forgiveness.</p>
+
+    <p>The Greek word translated as "repentance" — <em>metanoia</em> — means a change of mind. A turn. A reorientation. Not self-punishment. Not even regret, exactly. A shift in direction. A return to the mark that was missed.</p>
+
+    <p>Through the lens of this essay, repentance becomes something far more radical than moral correction. It becomes a question:</p>
+
+    <p><em>What is the behavior trying to protect?</em></p>
+
+    <div class="lens-split">
+      <div class="lens-side">
+        <div class="lens-label old">The inherited model</div>
+        <p>You sinned. You are guilty. Stop the behavior. Prove you've changed. Then you may be forgiven.</p>
+        <p>The person is the problem. Compliance is the solution.</p>
+      </div>
+      <div class="lens-side">
+        <div class="lens-label new">Through this lens</div>
+        <p>Something in you is protecting a wound. The behavior is a signal. Ask what it is trying to accomplish. Restore the conditions that make coherence possible. The behavior will change because the need has been met.</p>
+        <p>The conditions are the problem. Restoration is the solution.</p>
+      </div>
+    </div>
+
+    <p>This is not a softening of repentance. It is a deepening. The inherited model asks you to stop doing the wrong thing through willpower and shame. This lens asks you to understand <em>why the wrong thing felt necessary</em> — and to address that. One produces compliance. The other produces transformation.</p>
+
+    <p>And this is precisely what Jesus demonstrated. He did not demand that people change before he would be present with them. He was present with them, and the change emerged from the safety of that presence. He fed before he taught. He touched before he corrected. He restored the relational field, and inside that restoration, the organism could reorganize itself.</p>
+
+    <p>The institutional church, for much of its history, reversed this sequence. It demanded behavioral change as the <em>precondition</em> for belonging. And then it was baffled when people could not sustain the change — when the same sins returned, louder, stranger, more entrenched. Of course they did. You cannot heal fragmentation by punishing the fragments. You can only heal it by making the whole system safe enough to reconvene.</p>
+
+  </section>
+
+  <!-- SECTION 8: SHAME AS THE LOCKING MECHANISM -->
+  <section id="s8">
+    <div class="section-label">Part Eight</div>
+    <h2>Shame as the Locking Mechanism</h2>
+
+    <p>There is a reason the cycle perpetuates. There is a reason people circle the same behaviors for decades, knowing they want to stop, unable to produce the stop. It is not weakness. It is not depravity. It is architecture.</p>
+
+    <p>Shame is the mechanism that freezes misclassification in place.</p>
+
+    <p>Here is how it works. A person carries a current — a longing, a protective energy, a need. The current has been misclassified. The person acts on the misclassification — pursues the wrong target, expresses the energy through the wrong channel, feeds the hunger with the wrong substance. The behavior produces a result that does not satisfy the original need. And then shame arrives. Not as information. As <em>identity</em>.</p>
+
+    <p>Not: <em>that behavior was off-target</em>. But: <em>you are the kind of person who does that</em>.</p>
+
+    <p>And once shame has converted the behavior into identity, investigation becomes impossible. A person in shame cannot safely examine what the current was trying to accomplish. They cannot ask <em>what was I actually reaching for?</em> — because the shame has already answered: <em>you were reaching for something disgusting, because you are disgusting</em>. The question is closed before it opens.</p>
+
+    <div class="pull">
+      <p>"Shame does not merely punish. It prevents investigation. It makes it unsafe to look at the signal, which ensures the signal will never be correctly read, which ensures the behavior will never change, which produces more shame. The loop is the architecture, not the accident."</p>
+    </div>
+
+    <p>The current goes underground. It does not disappear. Nothing that fundamental disappears. It builds pressure. It finds cracks. It returns — louder, more distorted, more urgent. Society calls that <em>temptation</em>. The church calls it <em>the flesh</em>. Psychology calls it <em>repression</em>. Through the lens of this essay, it is none of those things. It is a coherence signal that was never understood, pressing against the walls of a system that was never taught to listen.</p>
+
+    <p>And the person caught in that loop does not need more willpower. They do not need more shame. They do not need another sermon about the flesh. They need someone to sit with them in the signal and say: <em>what were you actually reaching for?</em></p>
+
+    <p>That question — asked without judgment, held without flinching — is the most powerful intervention this essay can offer. Because it is the one question the shame architecture was specifically designed to prevent.</p>
+
+  </section>
+
+  <!-- SECTION 9: THE COST OF MISCLASSIFICATION -->
+  <section id="s9">
+    <div class="section-label">Part Nine</div>
+    <h2>The Cost of Misclassification</h2>
+
+    <p>This essay has focused on sin because sin is where the misclassification wound runs deepest in Western culture. But the mechanism is not limited to religion. It is not even primarily about religion.</p>
+
+    <p>Every institution classifies reality. That is what institutions do. They receive the raw, unnamed currents of human experience and organize them into categories that can be managed, measured, treated, punished, or rewarded. This is not inherently wrong. Without classification, there is no shared language, no coordination, no culture at all.</p>
+
+    <p>But when the classification is wrong, something happens that is almost impossible to reverse from inside the system.</p>
+
+    <p>Names become identities. Identities become destinies.</p>
+
+    <p>A school classifies a child's nervous-system overwhelm as a <em>behavioral problem</em>. The child becomes "the problem kid." The identity organizes everything that follows — discipline, tracking, expectation, self-concept. The original signal — <em>this environment is overwhelming my system</em> — is never read. It was classified before it could be understood.</p>
+
+    <p>Medicine classifies a grief response as <em>clinical depression</em>. The grief — which is a coherent, purposeful process of the psyche reorganizing itself after loss — is medicated into suppression. The signal is not treated. It is silenced. The person does not heal. They stabilize. There is a difference.</p>
+
+    <p>Psychology classifies a trauma adaptation as a <em>personality disorder</em>. The person who built an elaborate internal architecture to survive unbearable conditions is told that their architecture is the disease. The survival strategy that kept them alive is pathologized. And now the person must treat their own intelligence as the enemy.</p>
+
+    <p>Law classifies addiction as a <em>criminal behavior</em>. The person whose nervous system found the only regulation available is placed in a cage. The signal — <em>I am in pain and I found the one thing that interrupts it</em> — is not only unread. It is punished.</p>
+
+    <div class="pull bone">
+      <p>"When the classification is wrong, people begin living inside the wrong story about themselves. And the wrong story, repeated long enough by enough institutions, becomes indistinguishable from truth."</p>
+    </div>
+
+    <p>This is not a critique of any single institution. It is a recognition that the misclassification wound operates at civilizational scale. It is present wherever a human signal is received, mislabeled, and then treated according to the label rather than the signal. It is present wherever the name arrives before the understanding.</p>
+
+    <p>Religion misclassified the currents and called them sin. Medicine misclassified them and called them disorder. Education misclassified them and called them defiance. Law misclassified them and called them crime. The family misclassified them and called them <em>too much</em>.</p>
+
+    <p>The signal was always the same. It was always coherent. What varied was the institution that received it and the label it was given.</p>
+
+  </section>
+
+  <!-- SECTION 10: CLOSING -->
+  <section id="s10" class="final-section">
+    <div class="section-label">Closing</div>
+    <h2>Learning to Trust the Language of the Soul Again</h2>
+
+    <p>This essay has moved through scripture, theology, psychology, and institutional critique. But it has only ever been about one thing.</p>
+
+    <p>Signals.</p>
+
+    <p>The human organism produces signals — currents of longing, protection, grief, hunger, awe, expansion, withdrawal. These signals are not random. They are not noise. They are the language of the psyche, reporting with extraordinary precision on the state of the organism and its relationship to its environment. They are, in the deepest sense, the way the self communicates with itself about what it needs to be whole.</p>
+
+    <p>What this essay calls sin is what happens when those signals are misread. When protection becomes wrath because no one taught the organism how to hold the energy. When the search for union becomes lust because intimacy was disconnected from relationship before the person was old enough to know the difference. When dignity becomes pride because humiliation made it unsafe to be simply worthy. When nourishment-seeking becomes gluttony because the real nourishment was never named.</p>
+
+    <p>The organism is not evil. It is <em>translating under duress</em>. It is doing the best it can with names it did not choose, categories it did not build, and a shame architecture that punishes it for every attempt to find the mark it was never shown.</p>
+
+    <p>If sin is misclassification, then repentance is not self-hatred. It is <em>remembering</em>. It is the turn back toward the original current — the one that existed before the name was wrong, before the channel was substituted, before the shame locked the whole system in place. Repentance is the moment the organism says: <em>I was reaching for something real, and I was given the wrong address</em>.</p>
+
+    <p>If shame taught us to mistrust our own currents, grace teaches us to hear them again. Not to indulge every impulse. Not to dissolve all boundaries. But to approach the signal with curiosity rather than condemnation. To ask what the behavior is protecting before demanding that it stop. To restore the conditions for coherence rather than punishing the symptoms of its absence.</p>
+
+    <p>This is what The Field has been writing toward from the beginning. Hunger, sexuality, grief, longing, even what Scripture calls sin — all different dialects of the same underlying reality: signals pointing toward relationship and integration, whose meaning depends entirely on whether they are classified coherently or incoherently. Every essay in this series is a variation on a single recognition: that the human organism, left alone with its real signals, already knows the direction of its own healing. What it needs is not correction. It is <em>accurate translation</em>.</p>
+
+    <div class="closing-invocation">
+      The currents were never the enemy.<br>
+      The names were wrong.<br>
+      The signals were always coherent.<br><br>
+      Perhaps the Kingdom was never asking us to become someone else.<br>
+      Perhaps it was inviting us to stop calling<br>
+      the deepest parts of ourselves<br>
+      <em>by the wrong names.</em>
+    </div>
+
+    <div class="divider">· · ·</div>
+
+    <p style="margin-top: 52px; font-size: 0.82em; color: var(--ash); line-height: 1.7; text-align: center;">
+      Essay Eleven in The Field · sKiDa<br>
+      <em style="opacity: 0.6;">For everyone who was told the current was the enemy.</em>
+    </p>
+  </section>
+
+</div>
+
+<script>
+  const bar = document.getElementById('progressBar');
+  window.addEventListener('scroll', () => {
+    const pct = (window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100;
+    bar.style.width = pct + '%';
+  });
+
+  const nav = document.getElementById('sidenav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('show', window.scrollY > 200);
+  });
+
+  const sections = document.querySelectorAll('section');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.07 });
+  sections.forEach(s => observer.observe(s));
+
+  const dots = document.querySelectorAll('.sidenav-dot');
+  const sectionEls = document.querySelectorAll('section[id]');
+  const dotObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        dots.forEach(d => d.classList.remove('active'));
+        const active = document.querySelector(`.sidenav-dot[data-target="${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { threshold: 0.4 });
+  sectionEls.forEach(s => dotObserver.observe(s));
+
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      const target = document.getElementById(dot.dataset.target);
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+</script>
+
+</body>
+</html>
