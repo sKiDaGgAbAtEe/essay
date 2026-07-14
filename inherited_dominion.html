@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inherited Dominion — The Field</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0809;
+    --surface: #140b0c;
+    --card: #1a0e0f;
+    --border: rgba(180, 80, 90, 0.14);
+    --bruise: #8a3a42;
+    --bruise-deep: #5c2028;
+    --bruise-soft: rgba(138, 58, 66, 0.09);
+    --iron: #6a3038;
+    --iron-soft: rgba(106, 48, 56, 0.09);
+    --ash: #8a7a7b;
+    --text: #ede0e1;
+    --text-soft: #9a8485;
+    --signal: #a84850;
+    --dark: #2a1418;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 19px;
+    line-height: 1.9;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.5;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; bottom: -10%; right: -15%; width: 60%; height: 60%;
+    background: radial-gradient(circle, rgba(138, 58, 66, 0.04) 0%, transparent 55%);
+    pointer-events: none; z-index: 0; opacity: 0.8;
+  }
+
+  .progress {
+    position: fixed; top: 0; left: 0; height: 2px;
+    width: 0%; background: linear-gradient(90deg, var(--bruise-deep), var(--bruise), #c06070);
+    z-index: 1000; transition: width 0.1s linear;
+  }
+
+  .sidenav {
+    position: fixed; right: 28px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 10px; z-index: 200;
+    opacity: 0; transition: opacity 0.5s;
+  }
+  .sidenav.show { opacity: 1; }
+  .sidenav-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border);
+    border: 1px solid var(--bruise);
+    cursor: pointer; transition: all 0.3s; position: relative;
+  }
+  .sidenav-dot.active { background: var(--signal); border-color: var(--signal); transform: scale(1.4); }
+  .sidenav-dot:hover::after {
+    content: attr(data-label);
+    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    white-space: nowrap; font-family: 'Source Serif 4', serif;
+    font-size: 11px; color: var(--bruise); opacity: 0.9;
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative; z-index: 1;
+    max-width: 760px; margin: 0 auto;
+    padding: 0 40px 140px;
+  }
+
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-eyebrow {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.75em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--signal);
+    margin-bottom: 32px;
+    opacity: 0.9;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2.6em, 6.5vw, 4.4em);
+    font-weight: 700;
+    line-height: 1.05;
+    color: var(--text);
+    margin-bottom: 16px;
+    letter-spacing: -0.01em;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--bruise);
+  }
+
+  .hero-subtitle {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1em, 2.5vw, 1.3em);
+    font-style: italic;
+    color: var(--text-soft);
+    margin-bottom: 36px;
+    letter-spacing: 0.01em;
+  }
+
+  .hero-subhead {
+    font-size: 1.05em;
+    color: var(--text-soft);
+    max-width: 600px;
+    line-height: 1.75;
+    font-style: italic;
+    margin-bottom: 50px;
+  }
+
+  .hero-line {
+    width: 80px; height: 1px;
+    background: linear-gradient(90deg, var(--bruise), transparent);
+    margin-bottom: 30px;
+  }
+
+  .hero-meta {
+    display: flex; gap: 40px; align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .hero-author {
+    font-size: 0.82em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ash);
+  }
+
+  .hero-date {
+    font-size: 0.78em;
+    color: var(--ash);
+    opacity: 0.7;
+  }
+
+  section {
+    padding: 90px 0 30px;
+    border-bottom: 1px solid var(--border);
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  section.visible { opacity: 1; transform: none; }
+
+  .section-label {
+    font-size: 0.72em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--signal);
+    margin-bottom: 12px;
+    font-family: 'Source Serif 4', serif;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.8em, 4vw, 2.5em);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 36px;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.3em;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--bruise);
+    margin-top: 52px;
+    margin-bottom: 20px;
+  }
+
+  h4 {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.9em;
+    font-weight: 400;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--signal);
+    margin-top: 32px;
+    margin-bottom: 14px;
+  }
+
+  p { margin-bottom: 22px; color: var(--text); }
+  p + p { margin-top: -4px; }
+  strong { color: var(--bruise); font-weight: 600; }
+  em { color: var(--text); }
+
+  .pull {
+    border-left: 3px solid var(--bruise);
+    margin: 44px 0;
+    padding: 22px 32px;
+    background: var(--bruise-soft);
+    border-radius: 0 6px 6px 0;
+  }
+  .pull p {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.18em;
+    font-style: italic;
+    color: var(--text);
+    line-height: 1.55;
+    margin: 0;
+  }
+  .pull.iron {
+    border-left-color: var(--signal);
+    background: rgba(168, 72, 80, 0.07);
+  }
+
+  .insight-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 32px 36px;
+    margin: 40px 0;
+    position: relative;
+  }
+  .insight-box-label {
+    font-size: 0.7em;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--signal);
+    margin-bottom: 16px;
+  }
+  .insight-box p {
+    font-size: 0.95em;
+    color: var(--text-soft);
+    line-height: 1.8;
+    margin-bottom: 14px;
+  }
+  .insight-box p:last-child { margin-bottom: 0; }
+  .insight-box p strong { color: var(--bruise); }
+
+  .pattern-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 36px 0 44px;
+    font-size: 0.93em;
+  }
+  .pattern-table thead tr {
+    border-bottom: 1px solid var(--border);
+  }
+  .pattern-table th {
+    text-align: left;
+    font-family: 'Source Serif 4', serif;
+    font-weight: 400;
+    font-size: 0.72em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ash);
+    padding: 0 16px 14px 0;
+  }
+  .pattern-table td {
+    padding: 16px 16px 16px 0;
+    border-bottom: 1px solid rgba(180, 80, 90, 0.08);
+    vertical-align: top;
+    line-height: 1.65;
+    color: var(--text-soft);
+  }
+  .pattern-table td:first-child {
+    color: var(--text);
+    font-style: italic;
+    width: 30%;
+  }
+  .pattern-table td strong { color: var(--bruise); }
+
+  .invocation {
+    padding: 80px 0 60px;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.25em;
+    font-style: italic;
+    line-height: 1.7;
+    color: var(--text-soft);
+    border-bottom: 1px solid var(--border);
+  }
+  .invocation em {
+    color: var(--bruise);
+    display: block;
+    margin-top: 6px;
+  }
+
+  .closing {
+    padding: 60px 0 20px;
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.15em;
+    font-style: italic;
+    line-height: 1.8;
+    color: var(--text-soft);
+  }
+  .closing em {
+    color: var(--bruise);
+    display: block;
+    margin-top: 6px;
+  }
+
+  .footer {
+    padding: 40px 0 0;
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+  .footer p {
+    font-size: 0.82em;
+    color: var(--ash);
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+  .footer .small { font-size: 0.78em; opacity: 0.7; }
+  .footer .note {
+    margin-top: 16px;
+    font-style: italic;
+    font-size: 0.8em;
+    color: var(--text-soft);
+    opacity: 0.8;
+    max-width: 540px;
+    line-height: 1.7;
+  }
+
+  .related {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 28px 32px;
+    margin: 52px 0 20px;
+  }
+  .related-label {
+    font-size: 0.7em;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ash);
+    margin-bottom: 10px;
+  }
+  .related a {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1em;
+    color: var(--bruise);
+    text-decoration: none;
+    display: block;
+    margin-bottom: 10px;
+  }
+  .related a:hover { color: var(--signal); }
+  .related-desc {
+    font-size: 0.88em;
+    color: var(--text-soft);
+    line-height: 1.7;
+    font-style: italic;
+  }
+
+  .back-button {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 16px;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    color: var(--signal);
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--signal);
+    border-radius: 6px;
+    font-family: 'Source Serif 4', serif;
+    z-index: 9999;
+    backdrop-filter: blur(6px);
+    white-space: nowrap;
+  }
+  .back-button:hover {
+    background: rgba(168, 72, 80, 0.15);
+  }
+
+  @media (max-width: 600px) {
+    .container { padding: 0 22px 100px; }
+    .sidenav { display: none; }
+    .pattern-table { font-size: 0.86em; }
+  }
+</style>
+</head>
+<body>
+
+<a href="https://skidaggabatee.github.io/essay/" class="back-button">← Back</a>
+
+<div class="progress" id="progressBar"></div>
+
+<nav class="sidenav" id="sidenav">
+  <div class="sidenav-dot" data-target="s1" data-label="The Cut"></div>
+  <div class="sidenav-dot" data-target="s2" data-label="What Was True"></div>
+  <div class="sidenav-dot" data-target="s3" data-label="The Pattern"></div>
+  <div class="sidenav-dot" data-target="s4" data-label="The Capture"></div>
+  <div class="sidenav-dot" data-target="s5" data-label="The Inheritance"></div>
+  <div class="sidenav-dot" data-target="s6" data-label="Finish the Work"></div>
+</nav>
+
+<div class="container">
+
+  <header class="hero" id="hero">
+    <div class="hero-eyebrow">The Field · Essay Thirteen</div>
+    <h1><em>Inherited</em> Dominion</h1>
+    <div class="hero-subtitle">The Act of Righteous Capture</div>
+    <div class="hero-line"></div>
+    <p class="hero-subhead">The movement that named the cage didn't dismantle it. It moved in. And it brought the lock with it.</p>
+    <div class="hero-meta">
+      <span class="hero-author">sKiDa</span>
+      <span class="hero-date">2026</span>
+    </div>
+  </header>
+
+  <!-- SECTION 1 -->
+  <section id="s1" class="visible">
+    <div class="section-label">Part One</div>
+    <h2>The Cut</h2>
+
+    <p>The movement that named the cage didn't dismantle it. It moved in. And it brought the lock with it.</p>
+
+    <p>This essay is not an attack on feminism. Feminism is simply the current host of a mechanism that is older than any of its hosts, that has infected every liberation movement that ever accumulated enough institutional power to enforce rather than liberate, and that will outlast this one too if it goes unnamed. The mechanism is what this essay is about. Feminism is the case study. The distinction matters, and this essay will hold it — but it will not spend time cushioning the argument before making it, because the people who need this most are already past the point where cushioning helps.</p>
+
+    <p>What is currently visible — in real time, in public discourse, in the specific phenomenon of male suffering being treated as either politically inconvenient, categorically suspicious, or evidence of the original sin of maleness — is not a fringe position. It has institutional momentum. It has academic infrastructure. It has a vocabulary, a set of approved responses, and a social enforcement mechanism that operates on anyone who questions it with the same basic move the control structures it was built to oppose used on its founders.</p>
+
+    <p>That is not coincidence. That is the pattern. And the pattern has a name.</p>
+
+    <div class="pull">
+      <p>Inherited dominion: when a movement built to dismantle a control structure takes the structure's place without dismantling its logic. The righteousness is real. That is what makes the capture complete.</p>
+    </div>
+
+    <p>Naming it is not the same as dismissing what came before it. Both things are true simultaneously: the original analysis was largely correct, and the framework that grew from it has become something its founders would not entirely recognize. Holding both is not contradiction. It is precision.</p>
+  </section>
+
+  <!-- SECTION 2 -->
+  <section id="s2">
+    <div class="section-label">Part Two</div>
+    <h2>What Was True</h2>
+
+    <p>The concept of toxic masculinity, when it was doing its actual work, was pointing at something real. It named a cluster of culturally produced behaviors — emotional suppression, dominance through aggression, the enforced prohibition on male vulnerability — and correctly identified them as learned rather than innate. That was a legitimate and necessary move. The damage those behaviors produce is documented, measurable, and serious. Men who cannot access their own emotional lives cause harm to themselves and to the people around them. The culture that produced that incapacity was worth naming and worth fighting.</p>
+
+    <p>The feminist movement that did that naming also correctly identified structural power — who held it, how it was distributed, how it was maintained through institutional and cultural mechanisms that presented themselves as neutral. The analysis of patriarchy as a system rather than a collection of individual bad actors was structurally sound. Systems do not require malicious individuals to produce consistent harm. They require incentive structures, normalized behaviors, and the absence of alternatives. All of that was real.</p>
+
+    <p>None of what follows erases that. The original diagnosis was largely correct. The treatment derived from it is where the inheritance began.</p>
+
+    <div class="pull iron">
+      <p>You can be right about the wound and still build the wrong thing from the diagnosis. The history of liberation movements is substantially a history of that error.</p>
+    </div>
+
+    <p>What happened next is the mechanism. The concept got detached from the structural critique that gave it meaning and reattached to men as a category. The behaviors became the identity. The analysis of a system became the prosecution of a class. And the framework that was built to protect the vulnerable from institutional harm became, in specific and measurable ways, an institution capable of producing institutional harm.</p>
+
+    <p>That is not a betrayal of the original project. It is what happens to every project of this kind when it achieves enough cultural power to stop being the opposition and start being the establishment. The establishment does not announce the transition. It rarely notices it.</p>
+  </section>
+
+  <!-- SECTION 3 -->
+  <section id="s3">
+    <div class="section-label">Part Three</div>
+    <h2>The Pattern Across History</h2>
+
+    <p>This is not a new story. It is the story of institutional power, told again with different characters.</p>
+
+    <p>Every liberation movement that has ever existed began with a legitimate grievance, a structural analysis, and a moral clarity that came from being the party without power. That clarity is real. The powerless see the machinery of power clearly because they live inside its output. They are not romanticizing their condition. They are accurately describing what is happening to them.</p>
+
+    <p>But moral clarity is a product of position, not of character. When the position changes — when the movement gains institutional ground, academic legitimacy, media infrastructure, social enforcement capacity — the clarity does not automatically update. The framework that was forged in opposition gets carried into dominance. And a framework built to describe what power does to the powerless does not, without deliberate revision, know how to describe what it is doing when it becomes the power.</p>
+
+    <table class="pattern-table">
+      <thead>
+        <tr>
+          <th>Movement</th>
+          <th>Original legitimate grievance</th>
+          <th>The inherited dominion</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>The Church</td>
+          <td>Spiritual community, care for the poor, resistance to Roman imperial power</td>
+          <td>Inquisition, forced conversion, the institutional weaponization of salvation</td>
+        </tr>
+        <tr>
+          <td>Revolutionary Marxism</td>
+          <td>Accurate analysis of class exploitation under industrial capitalism</td>
+          <td>The vanguard party as new ruling class; the gulag as the logic of the revolution turned on itself</td>
+        </tr>
+        <tr>
+          <td>Temperance / Prohibition</td>
+          <td>Real damage caused by alcoholism to families, particularly women with no legal recourse</td>
+          <td>Morality as enforcement mechanism; criminalization that produced more harm than the original condition</td>
+        </tr>
+        <tr>
+          <td>Contemporary progressive discourse</td>
+          <td>Accurate structural analysis of systemic inequality and the cultural production of harm</td>
+          <td>The same logic of purity, enforcement, and approved suffering applied to a different target class</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>The table is not an argument that all movements are equivalent or that all grievances are equally valid. It is an argument that the mechanism of righteous capture does not discriminate. It operates on any framework that stops asking what it is protecting and starts asking what it is protecting itself from. That transition always looks, from the inside, like defending the gains. From the outside, it looks like what it is.</p>
+
+    <h3>The Purity Reflex</h3>
+
+    <p>There is a specific behavior that appears at the transition point. Call it the purity reflex. The in-group begins to define itself primarily by what it excludes. Membership is maintained not by shared belief but by demonstrated rejection of the wrong things, association with the wrong people, use of the wrong language. Dissent from within is treated as more threatening than opposition from without — because dissent from within suggests the boundary is permeable, which is the one thing the enforcement mechanism cannot tolerate.</p>
+
+    <p>The purity reflex is not ideology. It is institutional self-preservation wearing ideology's clothes. And it is currently operating, visibly and with momentum, in the specific discourse this essay is addressing.</p>
+  </section>
+
+  <!-- SECTION 4 -->
+  <section id="s4">
+    <div class="section-label">Part Four</div>
+    <h2>The Capture in Real Time</h2>
+
+    <p>Male suffering is currently, in significant portions of public discourse, pre-interpreted before it can be examined. The interpretation is not neutral. It arrives with a framework already applied: this suffering is either a deflection from more important suffering, a manipulation tactic, a symptom of the original problem, or evidence that the man in question has not done the necessary work. The suffering itself — as a raw datum, as a human being in pain — does not get a clean read. It gets routed through the framework first.</p>
+
+    <p>This is the misclassification move. The same move this series has been tracing across psychiatry, culture, theology, and institutional systems. The intensity is real. The container it gets forced into is not adequate to what it is carrying. And the inadequacy of the container produces outcomes — in the person, in the discourse, in the culture — that the framework then uses as further evidence for its own interpretation.</p>
+
+    <p>The specific phenomenon that crystallized this: the public celebration, in certain corners of discourse, of male suffering as a corrective. Not as a regrettable feature of a necessary structural shift. As a positive development. As evidence that something is finally being set right. The man in pain is legible, in this frame, not as a person but as a data point confirming the original thesis.</p>
+
+    <div class="pull">
+      <p>The emotional suppression that the original analysis correctly identified as harmful gets reproduced exactly when male suffering is treated as suspicious. The man who cannot cry because his culture told him it was weakness, and the man who cannot cry because his pain will be read as manipulation — those men are in the same cage. The bars are painted different colors.</p>
+    </div>
+
+    <p>This is not an argument that male suffering and female suffering are equivalent in every dimension, or that structural power has been equally distributed, or that the historical record is other than what it is. Those are separate questions with their own answers. This is an argument about a specific mechanism: the use of a group's designated social role to determine in advance whether their inner experience is legible as real. That mechanism is what was being fought. That mechanism is what is now being reproduced.</p>
+
+    <p>The people doing it are not villains. They are people operating a framework that has accumulated enough institutional weight that they experience it as reality rather than as a frame. The framework does not announce itself as a frame. It presents as obvious, as the baseline, as what any reasonable person would see if they were paying attention. That is precisely what the original framework — the one being opposed — did. The experience from inside is identical. That is the inheritance.</p>
+
+    <div class="insight-box">
+      <div class="insight-box-label">The Identical Code</div>
+      <p><strong>Original control structure:</strong> Your inner life is only valid if it conforms to the approved shape for your category. Deviation is evidence of defect.</p>
+      <p><strong>Inherited dominion:</strong> Your inner life is only valid if it conforms to the approved shape for your category. Deviation is evidence of defect.</p>
+      <p>The categories changed. The logic did not. When the logic does not change, the structure has not been dismantled. It has been inherited.</p>
+    </div>
+  </section>
+
+  <!-- INVOCATION -->
+  <div class="invocation">
+    The cage did not disappear.<br>
+    New hands took the lock.<br>
+    New voices named it freedom.<br>
+    <em>The person inside it is still inside it.</em>
+  </div>
+
+  <!-- SECTION 5 -->
+  <section id="s5">
+    <div class="section-label">Part Five</div>
+    <h2>What Was Inherited</h2>
+
+    <p>The specific things the movement carried from the structure it was opposing are worth naming precisely, because naming them is what makes it possible to put them down.</p>
+
+    <p>The first inheritance is the binary. The clean division between the class that causes harm and the class that receives it. That binary was analytically useful in specific historical contexts where power was distributed with enough consistency to make it descriptively accurate. It became a problem when it was treated as a permanent feature of human reality rather than a contingent description of particular conditions. Binaries do not update gracefully when conditions change. They defend themselves. The people who have built their moral orientation around a binary experience its dissolution not as progress but as threat.</p>
+
+    <p>The second inheritance is the gatekeeping of legitimate suffering. Every control structure in history has maintained a hierarchy of whose pain counts, whose experience is credible, whose testimony requires corroboration. The specific hierarchy changes. The function is identical: to determine in advance, by category, who can be believed. The movement that fought hardest against that function in one direction reproduced it in another. The direction changed. The function did not.</p>
+
+    <p>The third inheritance is the use of moral language as enforcement rather than description. The original moral language of the movement — oppression, harm, violence, safety — named real things. That language then got extended, gradually and without a clear threshold moment, into a mechanism for managing discourse rather than describing reality. Words that named genuine injury began also to be used to name disagreement, discomfort, and the presence of unwelcome perspectives. The extension was not announced. It happened incrementally, each step defended on the grounds of the legitimate cases that had established the language in the first place.</p>
+
+    <p>None of these inheritances required bad faith. That is the nature of inherited dominion. You do not have to choose the cage. You just have to stop asking whether the thing you are carrying is a cage.</p>
+  </section>
+
+  <!-- SECTION 6 -->
+  <section id="s6">
+    <div class="section-label">Part Six</div>
+    <h2>Finishing the Work</h2>
+
+    <p>The anti-control movement that is already in motion — the people who see this, who are naming it, who are doing the work of identifying the mechanism rather than just picking a side — is not a backlash. It is the logical extension of the original project. If the project was to dismantle control structures, then dismantling this one is not betrayal. It is completion.</p>
+
+    <p>Finishing the work looks specific. It does not look like reversing the gains. It does not look like rehabilitating the original structure that was correctly identified as harmful. It looks like applying the same analytical tools that were used to identify the original problem to the framework itself — asking whether the framework is producing what it claimed to be producing, whether the people it was built to protect are actually being protected, and whether the control it was built to dismantle has been dismantled or merely relocated.</p>
+
+    <p>The question that begins the finishing is the same question every control structure is incapable of asking about itself: <strong>who is this protecting, and who is it protecting itself from?</strong></p>
+
+    <p>A framework that cannot ask that question about itself has stopped being a liberation project. It has become an institution. Institutions serve themselves first. The people they were built for are secondary, and eventually they become the raw material the institution processes rather than the constituency it serves.</p>
+
+    <p>The specific people currently being processed — men whose suffering is pre-interpreted, women who built their identity around the framework and are now constrained by it in ways they cannot yet name, people of any gender who fall outside the binary that the framework requires in order to function — are not collateral damage. They are the evidence. The evidence that the work is not finished. The evidence that inherited dominion is real, and operating, and overdue for the same scrutiny that the original dominion received.</p>
+
+    <div class="pull iron">
+      <p>The original analysis took courage. It required people to name something that had the full weight of institutional normality behind it — that presented itself as simply how things were. Finishing the work requires the same courage, applied to the framework itself. That is harder. It always is. The people inside the cage you built do not thank you for noticing the bars.</p>
+    </div>
+
+    <p>The movement that can do this — that can hold its original analysis as largely correct and its current instantiation as requiring the same critical examination it applied to what came before — is the movement that actually finishes what it started. The one that cannot is the one that has fully inherited the dominion it set out to dismantle.</p>
+
+    <p>The distinction is still available. The window is not permanently closed. But it does not stay open indefinitely, and the momentum is visible to anyone paying attention.</p>
+
+    <p>The cage is the problem. It has always been the cage. Whoever holds the lock.</p>
+
+    <div class="related">
+      <div class="related-label">A Companion Piece</div>
+      <a href="https://skidaggabatee.github.io/essay/What_We_Did_to_the_Sensitive_Man.html">What We Did to the Sensitive Man →</a>
+      <div class="related-desc">The earlier essay in this series that traced what archetypal extraction looks like at the individual level — what happens when you take something natural from a person, tell them it was never theirs, and then punish them for every symptom of the theft. <em>Inherited Dominion</em> is the same mechanism at institutional scale.</div>
+    </div>
+
+    <div class="closing">
+      The cage is the problem.<br>
+      It has always been the cage.<br>
+      <em>Whoever holds the lock.</em>
+    </div>
+
+    <div class="footer">
+      <p><em>Inherited Dominion: The Act of Righteous Capture</em> by sKiDa</p>
+      <p class="small">The Field · Essay Thirteen · ΔHV Field Archive</p>
+      <p class="note">This essay is not an anti-feminist argument. It is an argument about a mechanism that operates on any framework that accumulates enough institutional power to stop asking what it is protecting. The original analysis was largely correct. The work is not finished.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+  });
+
+  const nav = document.getElementById('sidenav');
+  const dots = document.querySelectorAll('.sidenav-dot');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('show', window.scrollY > 500);
+    const sections = document.querySelectorAll('section[id]');
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 250) current = s.id;
+    });
+    dots.forEach(d => d.classList.toggle('active', d.getAttribute('data-target') === current));
+  });
+  dots.forEach(d => {
+    d.addEventListener('click', () => {
+      const target = document.getElementById(d.getAttribute('data-target'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.04 });
+  document.querySelectorAll('section').forEach(s => observer.observe(s));
+  setTimeout(() => document.querySelectorAll('section').forEach(s => s.classList.add('visible')), 1800);
+</script>
+
+</body>
+</html>
