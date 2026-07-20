@@ -1,0 +1,828 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Broken Heart of Desire — sKiDa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0809;
+    --surface: #160d0f;
+    --card: #1c1012;
+    --border: rgba(180, 80, 100, 0.14);
+    --garnet: #a04060;
+    --garnet-soft: rgba(160, 64, 96, 0.11);
+    --rose: #c8607a;
+    --rose-soft: rgba(200, 96, 122, 0.10);
+    --blush: #d4889a;
+    --ash: #9a8088;
+    --text: #ede0e2;
+    --text-soft: #a08890;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 19px;
+    line-height: 1.9;
+    overflow-x: hidden;
+  }
+
+  /* GRAIN */
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.6;
+  }
+
+  /* PROGRESS */
+  .progress {
+    position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+    background: linear-gradient(90deg, var(--garnet), var(--blush));
+    z-index: 1000; transition: width 0.1s linear;
+  }
+
+  /* BACK BUTTON */
+  .back-btn {
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+    z-index: 500;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.72em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ash);
+    text-decoration: none;
+    padding: 8px 20px;
+    border: 1px solid rgba(160, 64, 96, 0.25);
+    border-radius: 20px;
+    backdrop-filter: blur(12px);
+    background: rgba(14, 8, 9, 0.7);
+    transition: all 0.3s;
+  }
+  .back-btn:hover {
+    color: var(--rose);
+    border-color: var(--garnet);
+  }
+
+  /* SIDENAV */
+  .sidenav {
+    position: fixed; right: 28px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 10px; z-index: 200;
+    opacity: 0; transition: opacity 0.5s;
+  }
+  .sidenav.show { opacity: 1; }
+  .sidenav-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border); border: 1px solid var(--garnet);
+    cursor: pointer; transition: all 0.3s; position: relative;
+  }
+  .sidenav-dot.active { background: var(--rose); border-color: var(--rose); transform: scale(1.4); }
+  .sidenav-dot:hover::after {
+    content: attr(data-label);
+    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    white-space: nowrap; font-family: 'Source Serif 4', serif;
+    font-size: 11px; color: var(--blush); opacity: 0.85;
+    pointer-events: none;
+  }
+
+  /* LAYOUT */
+  .container {
+    position: relative; z-index: 1;
+    max-width: 760px; margin: 0 auto;
+    padding: 0 40px 140px;
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-eyebrow {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.75em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--rose);
+    margin-bottom: 32px;
+    opacity: 0.9;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2.8em, 7vw, 5em);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 30px;
+    letter-spacing: -0.01em;
+  }
+
+  .hero h1 em {
+    font-style: italic;
+    color: var(--rose);
+  }
+
+  .hero-line {
+    width: 80px; height: 1px;
+    background: linear-gradient(90deg, var(--garnet), transparent);
+    margin-bottom: 30px;
+  }
+
+  .hero-subhead {
+    font-size: 1.1em;
+    color: var(--text-soft);
+    max-width: 560px;
+    line-height: 1.7;
+    font-style: italic;
+    margin-bottom: 50px;
+  }
+
+  .hero-meta {
+    display: flex; gap: 24px; align-items: center;
+    font-size: 0.8em; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ash);
+  }
+
+  /* SECTIONS */
+  section {
+    padding: 90px 0 30px;
+    border-bottom: 1px solid var(--border);
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  section.visible { opacity: 1; transform: none; }
+
+  .section-label {
+    font-size: 0.72em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--garnet);
+    margin-bottom: 12px;
+    font-family: 'Source Serif 4', serif;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.8em, 4vw, 2.6em);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 36px;
+  }
+
+  h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.3em;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--blush);
+    margin: 40px 0 16px;
+  }
+
+  p {
+    margin-bottom: 24px;
+    color: var(--text);
+  }
+
+  strong { color: var(--text); }
+
+  /* PULL QUOTES */
+  .pull {
+    border-left: 2px solid var(--garnet);
+    padding: 24px 32px;
+    margin: 48px 0;
+    background: var(--garnet-soft);
+    border-radius: 0 6px 6px 0;
+  }
+  .pull p {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.15em;
+    line-height: 1.65;
+    color: var(--text);
+    margin: 0;
+  }
+  .pull.rose {
+    border-left-color: var(--rose);
+    background: var(--rose-soft);
+  }
+  .pull.rose p { color: var(--blush); }
+
+  /* OPENING SCENE */
+  .scene {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.05em;
+    line-height: 1.85;
+    color: var(--text-soft);
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  /* LITANY */
+  .litany {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    line-height: 2.2;
+    color: var(--blush);
+    text-align: center;
+    padding: 40px 20px;
+    font-size: 1.1em;
+    margin: 48px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* INVERSION BOX */
+  .inversion {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 48px 44px;
+    margin: 56px 0;
+  }
+  .inversion-label {
+    font-size: 0.68em;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--ash);
+    margin-bottom: 32px;
+  }
+  .inversion-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 24px;
+    align-items: center;
+    margin-bottom: 32px;
+  }
+  .inversion-row:last-child { margin-bottom: 0; }
+  .inv-side {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+  }
+  .inv-left { color: var(--text-soft); font-size: 0.95em; }
+  .inv-right { color: var(--rose); font-size: 0.95em; text-align: right; }
+  .inv-arrow {
+    color: var(--garnet);
+    font-size: 1.3em;
+    text-align: center;
+    opacity: 0.7;
+  }
+  .inv-source {
+    font-size: 0.78em;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ash);
+    opacity: 0.7;
+    margin-bottom: 8px;
+  }
+
+  /* SHAME LOOP */
+  .loop {
+    margin: 56px 0;
+    position: relative;
+  }
+  .loop-step {
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    padding: 20px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    position: relative;
+  }
+  .loop-step:not(:last-child)::after {
+    content: '↓';
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--garnet);
+    font-size: 1.1em;
+    z-index: 2;
+  }
+  .loop-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6em;
+    color: var(--garnet);
+    opacity: 0.5;
+    min-width: 32px;
+    line-height: 1.2;
+    margin-top: 2px;
+  }
+  .loop-body h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1em;
+    color: var(--blush);
+    margin-bottom: 6px;
+    font-style: italic;
+  }
+  .loop-body p {
+    font-size: 0.9em;
+    color: var(--text-soft);
+    margin: 0;
+    line-height: 1.7;
+  }
+
+  /* THREE RESPONSES */
+  .responses {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 48px 0;
+  }
+  @media (max-width: 600px) { .responses { grid-template-columns: 1fr; } }
+  .response-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 28px 24px;
+  }
+  .response-card.full { grid-column: 1 / -1; }
+  .response-label {
+    font-size: 0.68em;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ash);
+    margin-bottom: 12px;
+  }
+  .response-card p {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    color: var(--text-soft);
+    margin: 0;
+    font-size: 0.95em;
+    line-height: 1.7;
+  }
+  .response-card.highlight {
+    border-color: var(--garnet);
+    background: var(--garnet-soft);
+  }
+  .response-card.highlight p { color: var(--text); }
+  .response-card.highlight .response-label { color: var(--rose); }
+
+  /* INVOCATION */
+  .invocation {
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.4em;
+    line-height: 1.9;
+    color: var(--rose);
+    margin: 80px 0;
+    padding: 50px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .invocation em { color: var(--blush); font-weight: 700; }
+
+  /* CLOSING */
+  .closing {
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25em;
+    line-height: 2;
+    color: var(--text);
+    margin: 80px 0 60px;
+    font-style: italic;
+  }
+  .closing em { color: var(--rose); }
+
+  /* RELATED */
+  .related {
+    margin: 56px 0;
+    padding: 28px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .related-label {
+    font-size: 0.7em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ash);
+    margin-bottom: 10px;
+  }
+  .related a {
+    color: var(--rose);
+    text-decoration: none;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.1em;
+    border-bottom: 1px solid transparent;
+    transition: all 0.3s;
+  }
+  .related a:hover { color: var(--blush); border-bottom-color: var(--garnet); }
+  .related-desc {
+    margin-top: 8px;
+    font-size: 0.88em;
+    color: var(--text-soft);
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  /* FOOTER */
+  .footer {
+    margin-top: 60px;
+    padding-top: 40px;
+    border-top: 1px solid var(--border);
+    font-size: 0.82em;
+    color: var(--ash);
+    line-height: 1.7;
+    text-align: center;
+  }
+  .footer p { margin-bottom: 8px; }
+  .footer .note {
+    margin-top: 16px;
+    opacity: 0.55;
+    font-style: italic;
+    font-size: 0.9em;
+  }
+
+  /* MOBILE */
+  @media (max-width: 720px) {
+    .container { padding: 0 24px 100px; }
+    .inversion { padding: 32px 24px; }
+    .inversion-row { grid-template-columns: 1fr; gap: 8px; }
+    .inv-right { text-align: left; }
+    .inv-arrow { display: none; }
+    .sidenav { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progressBar"></div>
+<a class="back-btn" href="https://skidaggabatee.github.io/essay/">← The Field</a>
+
+<nav class="sidenav" id="sidenav">
+  <div class="sidenav-dot" data-target="hero" data-label="Opening"></div>
+  <div class="sidenav-dot" data-target="s1" data-label="Recognition"></div>
+  <div class="sidenav-dot" data-target="s2" data-label="The Inversion"></div>
+  <div class="sidenav-dot" data-target="s3" data-label="The Loop"></div>
+  <div class="sidenav-dot" data-target="s4" data-label="The Affirmer"></div>
+  <div class="sidenav-dot" data-target="s5" data-label="Signal"></div>
+  <div class="sidenav-dot" data-target="s6" data-label="The Names"></div>
+</nav>
+
+<div class="container">
+
+  <!-- HERO -->
+  <header class="hero" id="hero">
+    <div class="hero-eyebrow">The Field · Essay Fourteen</div>
+    <h1>The <em>Broken Heart</em><br>of Desire</h1>
+    <div class="hero-line"></div>
+    <p class="hero-subhead">On the collapse of symbolic language, the overloaded erotic channel, and the people who spent their lives reaching inward with a dictionary that had half its pages torn out.</p>
+    <div class="hero-meta">
+      <div>sKiDa</div>
+      <div>The Field · Essay Fourteen</div>
+    </div>
+  </header>
+
+  <!-- SECTION 1: RECOGNITION -->
+  <section id="s1">
+    <div class="section-label">Part One</div>
+    <h2>Where This Started</h2>
+
+    <p>There are tears that don't belong to any single moment. They arrive as recognition — not of something new, but of something you have been circling for years without a name for it.</p>
+
+    <p>This essay began in one of those moments.</p>
+
+    <p>I had spent years in relationships where I felt drawn to affirm the desires of people I loved. To say: <em>yes, this is acceptable, I receive this, you are not broken.</em> That impulse felt like love. It felt like the most loving thing I knew how to do — to stand beside someone in a culture full of shame and say: you are seen.</p>
+
+    <p>It was love. And it was incomplete.</p>
+
+    <p>Not because affirmation is wrong. But because I was affirming the category without ever asking about the charge underneath it. I was helping people feel seen in the label they had arrived with. I wasn't equipped — the culture wasn't equipped — to ask whether the label was the right one. Whether what was being called desire was desire, or whether something else was moving through it: grief, fear, the need to be held, the wish to disappear, the residue of being touched too early and too wrong.</p>
+
+    <div class="scene">
+      I wasn't withholding. I didn't know what I was missing.<br>
+      Neither did they.<br>
+      We were both working with the only vocabulary we had been given.<br>
+      And the vocabulary had half its pages torn out.
+    </div>
+
+    <p>This essay is not about kink. It is not an argument against sexual expression, or a return to shame, or a call to interrogate desire until nothing erotic remains. It is about something that happens before all of that — something upstream, something structural — that has been costing people their lives for a very long time.</p>
+
+    <p>It is about what happens when a civilization loses the language required to differentiate psychic experience, and loads the entire weight of the human interior onto one overloaded channel.</p>
+
+    <p>It is about the broken heart inside desire. Not desire as the wound. But desire as the place where the wound learned to speak, because it had nowhere else to go.</p>
+  </section>
+
+  <!-- SECTION 2: THE INVERSION -->
+  <section id="s2">
+    <div class="section-label">Part Two</div>
+    <h2>The Freud Inversion</h2>
+
+    <p>Freud was one of the first people in the modern era to insist that sexuality wasn't merely about reproduction. He saw that dreams, symbols, slips of the tongue, and symptoms were entangled with desire. He looked at the symbol and found sexuality underneath it.</p>
+
+    <p>That was a genuine act of intellectual courage.</p>
+
+    <p>But it established a directionality that has shaped the entire century of psychological thinking that followed — and that directionality may be part of the problem.</p>
+
+    <div class="inversion">
+      <div class="inversion-label">The Structural Reversal</div>
+      <div class="inversion-row">
+        <div class="inv-side inv-left">
+          <div class="inv-source">Freud's move</div>
+          The symbol conceals sexuality.
+        </div>
+        <div class="inv-arrow">⟶</div>
+        <div class="inv-side inv-right">
+          When something powerful appears in a dream, in a compulsion, in a fixation — look for the sexual meaning underneath.
+        </div>
+      </div>
+      <div class="inversion-row">
+        <div class="inv-side inv-left">
+          <div class="inv-source">This essay's move</div>
+          Sexuality conceals the symbol.
+        </div>
+        <div class="inv-arrow">⟶</div>
+        <div class="inv-side inv-right">
+          When something is labeled sexual — a fantasy, a kink, a compulsion — ask what other psychic energy may have been routed through the only available channel.
+        </div>
+      </div>
+    </div>
+
+    <p>This is not a minor revision. It is a structural reversal of the foundational interpretive assumption of modern psychology.</p>
+
+    <p>Freud asked: what sexual meaning is hidden within this symbol?</p>
+
+    <p>The question this essay asks is: what kind of human energy has this culture taught people to recognize only as sexual?</p>
+
+    <p>The shift matters because the direction of interpretation determines what help looks like. If you assume sexuality is always the buried truth, you keep digging for it. If you ask what else might be true, you begin to see that grief can wear the face of lust. That the need to be witnessed can be routed through domination fantasy. That the longing for surrender may have nothing to do with submission and everything to do with exhaustion — with the desperate wish to stop managing, stop performing, stop holding the world up for one hour.</p>
+
+    <p>The body learns routes. Repetition deepens them. Arousal becomes the somatic alphabet through which many nonsexual needs are forced to speak — not because they are secretly sexual, but because every other channel has been closed.</p>
+
+    <div class="pull">
+      <p>The energy is real. The category may be false.</p>
+    </div>
+
+    <p>That is the heart of the misclassification model. Not that desire is fake. Not that sexuality is pathology. But that a civilization can become so symbolically impoverished that one channel — the erotic — is asked to carry the entire weight of the human interior.</p>
+
+    <p>And when that happens, the channel breaks. Not from overuse. From misuse. From being asked to do something it was never built to do.</p>
+
+    <p>That is the broken heart of desire. Not that people desired wrongly. But that desire became the last remaining language — and everything the psyche needed to say had to be spoken through it, whether it fit or not.</p>
+  </section>
+
+  <!-- SECTION 3: THE SHAME LOOP -->
+  <section id="s3">
+    <div class="section-label">Part Three</div>
+    <h2>What the Collapse Actually Costs</h2>
+
+    <p>This is not a theoretical problem. It has a precise mechanism, and that mechanism destroys people.</p>
+
+    <p>It works like this:</p>
+
+    <div class="loop">
+      <div class="loop-step">
+        <div class="loop-num">1</div>
+        <div class="loop-body">
+          <h4>A charge arrives</h4>
+          <p>Something powerful moves through the person. It may be grief, fear, attachment hunger, the need to be held, creative overflow, the longing to be witnessed, the wish to disappear. It does not arrive labeled. It arrives as intensity.</p>
+        </div>
+      </div>
+      <div class="loop-step">
+        <div class="loop-num">2</div>
+        <div class="loop-body">
+          <h4>The vocabulary fails</h4>
+          <p>The culture has not given the person words for what is moving. But it has given them one robust channel for intensity: the erotic. So the charge routes there. Not because it is sexual in origin. Because it is the only available container.</p>
+        </div>
+      </div>
+      <div class="loop-step">
+        <div class="loop-num">3</div>
+        <div class="loop-body">
+          <h4>The label hardens</h4>
+          <p>The person reaches for the nearest available category — kinky, submissive, dominant, deviant — and begins organizing identity, fantasy, relationships, and behavior around it. The label becomes a channel. The channel reproduces the original state.</p>
+        </div>
+      </div>
+      <div class="loop-step">
+        <div class="loop-num">4</div>
+        <div class="loop-body">
+          <h4>The shame arrives</h4>
+          <p>The culture punishes them for the category they chose. Not because they chose wrongly. Because the culture created conditions where that was the only category available — and then punished people for using it.</p>
+        </div>
+      </div>
+      <div class="loop-step">
+        <div class="loop-num">5</div>
+        <div class="loop-body">
+          <h4>The charge intensifies</h4>
+          <p>Shame does not dissolve desire. It charges it. The original intensity, now wrapped in shame, grows more urgent. It routes harder through the same overloaded channel. The loop tightens.</p>
+        </div>
+      </div>
+      <div class="loop-step">
+        <div class="loop-num">6</div>
+        <div class="loop-body">
+          <h4>The person is destroyed</h4>
+          <p>Not always literally. Sometimes just slowly — a life built around managing the loop instead of living. Sometimes the destruction is complete. The shame loop ends tragically for so many people who were simply trying to understand themselves.</p>
+        </div>
+      </div>
+    </div>
+
+    <p>The tragedy is not that people acted on wrong interpretations. It is that they were never given the conditions to form a right one — and then were held responsible for the consequences of that deprivation.</p>
+
+    <p>That is an indictment. Not of individuals. Of the system that closed every channel except one, and then punished people for using the only door left open.</p>
+
+    <div class="pull rose">
+      <p>Society didn't just fail to give people the language. It destroyed them for reaching for the only word they had.</p>
+    </div>
+
+    <p>Permission cultures and prohibition cultures look like opposites. They are not. Both are downstream of the same prior collapse: the assumption that intensity in the body equals sexuality. One says <em>act on it.</em> The other says <em>repress it.</em> Neither asks <em>what is it.</em></p>
+
+    <p>And "accept yourself" — however compassionately meant — can become a trap, because the self being accepted may already be a survival translation. Not the person's authentic desire. The shape desire took when it had nowhere else to go.</p>
+  </section>
+
+  <!-- SECTION 4: THE AFFIRMER'S WOUND -->
+  <section id="s4">
+    <div class="section-label">Part Four</div>
+    <h2>The Affirmer's Wound</h2>
+
+    <p>There is a specific wound that belongs to the people who tried to help.</p>
+
+    <p>Not the people who shamed. The people who loved. The ones who stood beside someone and said: <em>I see you, I receive this, you are not broken here.</em> The ones for whom affirmation felt like the most radical act of love available in a culture saturated with judgment.</p>
+
+    <p>It was love. And it was operating inside the same collapse it was trying to heal.</p>
+
+    <p>Because affirming the category without asking about the charge underneath is a form of premature closure. It helps someone feel seen in the label they arrived with. It doesn't create the conditions to ask whether the label is the right one. Whether the thing being called desire is desire, or whether something older and heavier is moving through it.</p>
+
+    <p>The impulse to affirm comes from exactly the right place. It comes from knowing what it costs to not be received — from having lived inside the shame culture, from understanding at a cellular level what it does to a person to be punished for what they feel. The instinct to receive rather than interrogate is not a mistake. It is a form of care shaped by exactly the wound the essay is describing.</p>
+
+    <p>But there is a difference between reception and containment.</p>
+
+    <div class="responses">
+      <div class="response-card">
+        <div class="response-label">Affirmation</div>
+        <p>"Your desire is real. You are acceptable. I receive this."</p>
+      </div>
+      <div class="response-card">
+        <div class="response-label">Containment</div>
+        <p>"Something is moving through you. It is real. And there may be more than one name for what it is."</p>
+      </div>
+      <div class="response-card full highlight">
+        <div class="response-label">What both are reaching for</div>
+        <p>"Please help me understand what I'm feeling."</p>
+      </div>
+    </div>
+
+    <p>Affirmation validates the translation. Containment holds space for the question before the translation hardens. Both are forms of love. Only one creates the conditions for the person to meet themselves more accurately.</p>
+
+    <p>The affirmer's wound is this: you were trying, with real care, to give people something the culture had taken from them. You were working with the best tools available. And the tools were incomplete — not because your love was incomplete, but because the vocabulary the culture gave you for intensity was already reduced to one word.</p>
+
+    <p>You were trying to help with a broken instrument. That is not a failure of compassion. It is what compassion looks like when it is operating inside a broken symbolic system.</p>
+
+    <div class="pull">
+      <p>The recognition that arrives late is not evidence that the care was wrong. It is evidence that you have grown past the only tools you had then.</p>
+    </div>
+  </section>
+
+  <!-- SECTION 5: SIGNAL -->
+  <section id="s5">
+    <div class="section-label">Part Five</div>
+    <h2>What Desire Was Actually Carrying</h2>
+
+    <p>None of this means that desire is fake. None of it means that erotic experience is merely misclassified grief, or that sexuality is always a symptom to be decoded.</p>
+
+    <p>The framework has to be falsifiable. It needs to be able to say: some of this is genuinely erotic, and doesn't reduce to something else. The model only works if misclassification is a subset of erotic experience — not a description of all of it.</p>
+
+    <p>What the model says is more precise than a sweeping indictment of desire:</p>
+
+    <div class="litany">
+      The energy is real.<br>
+      The category may be false.<br><br>
+      The charge is not the problem.<br>
+      The collapse of language around it is.<br><br>
+      The desire deserves to be received.<br>
+      And it deserves to be read correctly.
+    </div>
+
+    <p>When a culture loses ten words for inner experience and keeps only one, people don't stop having those experiences. They start calling all of them by the remaining word. The experience is genuine. The translation is impoverished.</p>
+
+    <p>What moves through a person in the charged moments that get labeled sexual may be:</p>
+
+    <p>The longing to be witnessed without performance. The need to surrender the self-management that never stops. Grief that has no other body to move through. The wish to be held so completely that the edges of the self dissolve. Creative overflow that has been dammed for so long it finds the nearest exit. Attachment hunger so old it predates language. The need to externalize old shame so it can finally be seen by someone else and found not to be true.</p>
+
+    <p>These are not sexual in origin. They are human in origin. They arrived through the erotic channel because every other channel was closed. And they deserve to be named correctly — not to strip away the erotic, but to restore the fuller signal underneath it.</p>
+
+    <p>The work is not suppression. It is differentiation. Learning to ask, when something powerful moves through: <em>What kind of energy is this?</em> Not to prevent desire. To meet it accurately. To give it its right name.</p>
+
+    <p>Because when awe is allowed to be awe, it stops needing to disguise itself as lust. When grief is allowed to be grief, it stops looking for someone to merge with. When the need to be mirrored is allowed to be exactly that, it stops routing through fantasies that were never about pleasure to begin with.</p>
+
+    <p>Differentiation doesn't flatten desire. It frees it.</p>
+
+    <div class="related">
+      <div class="related-label">The Foundational Essay</div>
+      <a href="https://skidaggabatee.github.io/essay/the_misclassification_wound.html">The Misclassification Wound →</a>
+      <div class="related-desc">Where the mechanism was first named: how sexuality became the default language for energies that once had sacred, communal, developmental, and initiatory containers — and what it costs to have no other channels for what moves through us.</div>
+    </div>
+  </section>
+
+  <!-- SECTION 6: THE NAMES -->
+  <section id="s6">
+    <div class="section-label">Part Six</div>
+    <h2>The Names We Were Never Given</h2>
+
+    <p>I think about the people who didn't make it through the loop.</p>
+
+    <p>Not the ones who found their way to frameworks like this one, who eventually found a language for what was moving. The ones who didn't. The ones who spent years reaching inward, finding only the names the culture had given them, building lives around those names, being destroyed by the shame the culture attached to those names, and never once being told that the problem was never them — it was the poverty of the vocabulary.</p>
+
+    <p>They were not broken. They were symbolically under-translated.</p>
+
+    <p>The shame they carried was not a response to something they were. It was the residue of having only one word for an experience that required ten — and being punished for the word, instead of being given the others.</p>
+
+    <div class="invocation">
+      Sacred energy stripped of language,<br>
+      then sold back to people<br>
+      as <em>pathology</em>, <em>perversion</em>,<br>
+      or <em>commodity</em>.<br><br>
+      None of them told the truth.<br>
+      The truth was: <em>signal</em>.<br>
+      And no one taught them how to read it.
+    </div>
+
+    <p>The essay I wish I could have given to Freud is not an argument against his courage. He opened the door. He insisted that the interior life was legible, that symptoms carried meaning, that desire was worth taking seriously. That mattered.</p>
+
+    <p>But he interpreted toward sexuality. The cultural legacy that followed said: when in doubt, sexualize the symbol. Find the libidinal root.</p>
+
+    <p>What if the question runs the other direction?</p>
+
+    <p>What if the symbol is not concealing sexuality — but sexuality is concealing the symbol? What if the erotic charge is not the buried truth but the available translation — the language the psyche reached for when the richer vocabulary had been taken away?</p>
+
+    <p>That reversal changes everything about what help looks like. It means the work is not to decode desire into something more respectable. It is to restore enough symbolic range that the psyche can finally speak in its full register — grief as grief, longing as longing, awe as awe, and desire as desire, each in its own name, none of them cannibalizing the others.</p>
+
+    <p>The broken heart of desire is not that people desired. It is that desire inherited a weight it was never meant to carry. That it became the last remaining vessel for the entire human interior. That it broke under the load — and the people carrying it broke with it — while the culture looked on and called it perversion, pathology, or weakness.</p>
+
+    <p>It was none of those things.</p>
+
+    <p>It was a person trying to understand what they felt, with the only language available.</p>
+
+    <p>And if we had given them more words — if we still give more words, to the next person, and the one after that — everything could be different.</p>
+
+    <div class="closing">
+      Not because the desire was wrong.<br>
+      Because the dictionary was.<br><br>
+      <em>Give them more words.</em><br>
+      That is all.<br>
+      That has always been all.
+    </div>
+
+    <div class="footer">
+      <p><em>The Broken Heart of Desire</em> by sKiDa</p>
+      <p style="opacity: 0.6; font-size: 0.92em;">The Field · Essay Fourteen · BloomNode // SACS // ΔHV Field Archive</p>
+      <p class="note">This essay does not pathologize desire. It mourns the conditions that forced desire to carry more than it was built to hold — and points toward the slow work of restoring the vocabulary that was taken.</p>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // Progress bar
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const pct = (h.scrollTop / (h.scrollHeight - h.clientHeight)) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+  });
+
+  // Sidenav
+  const nav = document.getElementById('sidenav');
+  const dots = document.querySelectorAll('.sidenav-dot');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('show', window.scrollY > 500);
+    const sections = document.querySelectorAll('section[id], header[id]');
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 250) current = s.id;
+    });
+    dots.forEach(d => d.classList.toggle('active', d.getAttribute('data-target') === current));
+  });
+  dots.forEach(d => {
+    d.addEventListener('click', () => {
+      const target = document.getElementById(d.getAttribute('data-target'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.04 });
+  document.querySelectorAll('section').forEach(s => observer.observe(s));
+  setTimeout(() => document.querySelectorAll('section').forEach(s => s.classList.add('visible')), 1800);
+</script>
+
+</body>
+</html>
