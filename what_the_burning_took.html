@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="An essay on the destruction of cultural roles that received unusual perception, and what became of the sensitive people who kept being born after those ecologies disappeared.">
+<meta name="author" content="sKiDa">
+<meta name="theme-color" content="#0b0906">
+<meta property="og:type" content="article">
+<meta property="og:title" content="What the Burning Took — sKiDa">
+<meta property="og:description" content="On the elimination of the sensitive world, and the people who kept being born to fill its missing roles.">
+<meta property="og:site_name" content="The Field">
+<meta name="twitter:card" content="summary_large_image">
+<title>What the Burning Took — sKiDa</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0b0906;
+    --surface: #130f0a;
+    --card: #191309;
+    --border: rgba(184, 118, 58, 0.15);
+    --ember: #b8763a;
+    --ember-soft: rgba(184, 118, 58, 0.10);
+    --flame: #d89848;
+    --gold: #e0b060;
+    --ash: #8a7a68;
+    --smoke: #6a5d50;
+    --text: #e8ddcf;
+    --text-soft: #a0917e;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  ::selection { background: rgba(216, 152, 72, 0.28); color: var(--text); }
+
+  :focus-visible {
+    outline: 2px solid var(--gold);
+    outline-offset: 4px;
+  }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 19px;
+    line-height: 1.9;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.6;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; bottom: -200px; left: 50%; transform: translateX(-50%);
+    width: 800px; height: 400px;
+    background: radial-gradient(ellipse at center, rgba(184, 118, 58, 0.06), transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+
+  .progress {
+    position: fixed; top: 0; left: 0; height: 2px; width: 0%;
+    background: linear-gradient(90deg, var(--ember), var(--gold));
+    z-index: 1000; transition: width 0.1s linear;
+  }
+
+  .back-btn {
+    position: fixed; top: 24px; left: 50%; transform: translateX(-50%);
+    z-index: 500;
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.72em; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--ash);
+    text-decoration: none; padding: 8px 20px;
+    border: 1px solid rgba(184, 118, 58, 0.25);
+    border-radius: 20px; backdrop-filter: blur(12px);
+    background: rgba(11, 9, 6, 0.7); transition: all 0.3s;
+  }
+  .back-btn:hover { color: var(--flame); border-color: var(--ember); }
+
+  .sidenav {
+    position: fixed; right: 28px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 10px; z-index: 200;
+    opacity: 0; transition: opacity 0.5s;
+  }
+  .sidenav.show { opacity: 1; }
+  .sidenav-dot {
+    appearance: none; padding: 0;
+    width: 8px; height: 6px; border-radius: 50%;
+    background: var(--border); border: 1px solid var(--ember);
+    cursor: pointer; transition: all 0.3s; position: relative;
+  }
+  .sidenav-dot span { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+  .sidenav-dot.active { background: var(--flame); border-color: var(--flame); transform: scale(1.4); }
+  .sidenav-dot:hover::after {
+    content: attr(data-label);
+    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    white-space: nowrap; font-family: 'Source Serif 4', serif;
+    font-size: 11px; color: var(--gold); opacity: 0.85;
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative; z-index: 1;
+    max-width: 760px; margin: 0 auto;
+    padding: 0 40px 140px;
+  }
+
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+  }
+  .hero-eyebrow {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.75em; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--flame);
+    margin-bottom: 32px; opacity: 0.9;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2.8em, 7vw, 5.2em);
+    font-weight: 700; line-height: 1.08;
+    color: var(--text); margin-bottom: 30px;
+    letter-spacing: -0.01em;
+  }
+  .hero h1 em { font-style: italic; color: var(--flame); }
+  .hero-line {
+    width: 80px; height: 1px;
+    background: linear-gradient(90deg, var(--ember), transparent);
+    margin-bottom: 30px;
+  }
+  .hero-subhead {
+    font-size: 1.1em; color: var(--text-soft);
+    max-width: 580px; line-height: 1.7;
+    font-style: italic; margin-bottom: 50px;
+  }
+  .hero-meta {
+    display: flex; gap: 24px; align-items: center;
+    font-size: 0.8em; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--ash);
+  }
+
+  section {
+    padding: 90px 0 30px;
+    border-bottom: 1px solid var(--border);
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  section.visible { opacity: 1; transform: none; }
+
+  .section-label {
+    font-size: 0.72em; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--ember);
+    margin-bottom: 12px; font-family: 'Source Serif 4', serif;
+  }
+  h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.8em, 4vw, 2.6em);
+    font-weight: 700; line-height: 1.2;
+    color: var(--text); margin-bottom: 36px;
+  }
+  p { margin-bottom: 24px; color: var(--text); }
+
+  .pull {
+    border-left: 2px solid var(--ember);
+    padding: 24px 32px; margin: 48px 0;
+    background: var(--ember-soft); border-radius: 0 6px 6px 0;
+  }
+  .pull p {
+    font-family: 'Playfair Display', serif; font-style: italic;
+    font-size: 1.15em; line-height: 1.65;
+    color: var(--text); margin: 0;
+  }
+  .pull.gold { border-left-color: var(--gold); }
+  .pull.gold p { color: var(--gold); }
+
+  .scene {
+    font-family: 'Playfair Display', serif; font-style: italic;
+    font-size: 1.05em; line-height: 1.85; color: var(--text-soft);
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 48px 0;
+  }
+
+  .malleus {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 40px 40px 32px;
+    margin: 48px 0;
+  }
+  .malleus-source {
+    font-size: 0.68em; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--ember);
+    margin-bottom: 20px;
+  }
+  .malleus p {
+    font-family: 'Playfair Display', serif;
+    font-style: italic; font-size: 1.05em;
+    line-height: 1.7; color: var(--text-soft);
+    margin-bottom: 16px;
+  }
+  .malleus p:last-child { margin-bottom: 0; }
+  .malleus .gloss {
+    font-family: 'Source Serif 4', serif;
+    font-style: normal; font-size: 0.92em;
+    color: var(--ash); margin-top: 20px;
+    padding-top: 18px; border-top: 1px solid var(--border);
+    line-height: 1.7;
+  }
+
+  .chain { margin: 56px 0; }
+  .chain-step {
+    display: flex; align-items: flex-start; gap: 20px;
+    padding: 18px 24px; margin-bottom: 6px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px; position: relative;
+  }
+  .chain-step:not(:last-child)::after {
+    content: '↓'; position: absolute;
+    bottom: -20px; left: 44px;
+    color: var(--ember); font-size: 1em; z-index: 2;
+  }
+  .chain-phase {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.7em; color: var(--ember);
+    min-width: 28px; opacity: 0.7;
+    letter-spacing: 0.1em; padding-top: 4px;
+  }
+  .chain-body {
+    font-family: 'Playfair Display', serif;
+    font-style: italic; font-size: 1.02em;
+    color: var(--text);
+  }
+  .chain-body span {
+    display: block; font-family: 'Source Serif 4', serif;
+    font-style: normal; font-size: 0.8em;
+    color: var(--ash); margin-top: 3px;
+  }
+
+  .roles { margin: 48px 0; border-top: 1px solid var(--border); }
+  .role-row {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 24px; padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: baseline;
+  }
+  .role-name {
+    font-family: 'Playfair Display', serif;
+    font-style: italic; font-size: 1.1em;
+    color: var(--gold);
+  }
+  .role-fn {
+    font-size: 0.95em; color: var(--text-soft);
+    line-height: 1.6;
+  }
+
+  .ladder {
+    margin: 56px 0;
+    display: flex; flex-direction: column; gap: 2px;
+  }
+  .rung {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    gap: 16px; align-items: center;
+    padding: 16px 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+  }
+  .rung:first-child { border-radius: 8px 8px 0 0; }
+  .rung:last-child { border-radius: 0 0 8px 8px; }
+  .rung-was {
+    font-family: 'Playfair Display', serif;
+    font-style: italic; color: var(--gold);
+    font-size: 0.98em;
+  }
+  .rung-arrow { color: var(--ember); opacity: 0.6; font-size: 0.9em; }
+  .rung-now {
+    font-family: 'Source Serif 4', serif;
+    color: var(--text-soft); text-align: right;
+    font-size: 0.92em;
+  }
+
+  .inventory {
+    font-family: 'Playfair Display', serif;
+    font-style: italic; line-height: 2.1;
+    color: var(--gold); padding: 40px 20px;
+    font-size: 1.08em; margin: 48px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .inventory span { color: var(--text-soft); }
+
+  .invocation {
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-style: italic; font-size: 1.4em;
+    line-height: 1.9; color: var(--flame);
+    margin: 80px 0; padding: 50px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .invocation em { color: var(--gold); font-weight: 700; }
+
+  .closing {
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.3em; line-height: 2;
+    color: var(--text); margin: 80px 0 60px;
+    font-style: italic;
+  }
+  .closing em { color: var(--flame); }
+
+  .related {
+    margin: 56px 0; padding: 28px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+  }
+  .related-label {
+    font-size: 0.7em; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--ash);
+    margin-bottom: 10px;
+  }
+  .related a {
+    color: var(--flame); text-decoration: none;
+    font-family: 'Playfair Display', serif;
+    font-style: italic; font-size: 1.1em;
+    border-bottom: 1px solid transparent; transition: all 0.3s;
+  }
+  .related a:hover { color: var(--gold); border-bottom-color: var(--ember); }
+  .related-desc {
+    margin-top: 8px; font-size: 0.88em;
+    color: var(--text-soft); font-style: italic; line-height: 1.6;
+  }
+
+  .footer {
+    margin-top: 60px; padding-top: 40px;
+    border-top: 1px solid var(--border);
+    font-size: 0.82em; color: var(--ash);
+    line-height: 1.7; text-align: center;
+  }
+  .footer p { margin-bottom: 8px; }
+  .footer .note {
+    margin-top: 16px; opacity: 0.55;
+    font-style: italic; font-size: 0.9em;
+  }
+
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    section { opacity: 1; transform: none; }
+  }
+
+  @media print {
+    body { background: #fff; color: #111; font-size: 12pt; }
+    body::before, body::after, .progress, .back-btn, .sidenav { display: none !important; }
+    .container { max-width: none; padding: 0; }
+    .hero { min-height: auto; padding: 1.5cm 0; }
+    section { opacity: 1; transform: none; break-inside: auto; }
+    p, h2, .pull, .malleus, .role-row, .rung { color: #111; }
+    .pull, .malleus, .rung, .chain-step, .related { background: transparent; border-color: #999; }
+    a { color: #111; text-decoration: underline; }
+  }
+
+  @media (max-width: 720px) {
+    .container { padding: 0 24px 100px; }
+    .malleus { padding: 28px 24px 24px; }
+    .sidenav { display: none; }
+    .role-row { grid-template-columns: 1fr; gap: 4px; }
+    .rung { grid-template-columns: 1fr; gap: 4px; }
+    .rung-now { text-align: left; }
+    .rung-arrow { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress" id="progressBar"></div>
+<a class="back-btn" href="https://skidaggabatee.github.io/essay/">← The Field</a>
+
+<nav class="sidenav" id="sidenav" aria-label="Essay sections">
+  <button class="sidenav-dot" type="button" data-target="hero" data-label="Opening" aria-label="Go to opening"><span>Opening</span></button>
+  <button class="sidenav-dot" type="button" data-target="s1" data-label="The Absence" aria-label="Go to The Shape of What's Missing"><span>The Absence</span></button>
+  <button class="sidenav-dot" type="button" data-target="s2" data-label="The Document" aria-label="Go to The Document Where It Becomes Visible"><span>The Document</span></button>
+  <button class="sidenav-dot" type="button" data-target="s3" data-label="The Net" aria-label="Go to The Machine of Conversion"><span>The Net</span></button>
+  <button class="sidenav-dot" type="button" data-target="s4" data-label="The Roles" aria-label="Go to What a Role Actually Does"><span>The Roles</span></button>
+  <button class="sidenav-dot" type="button" data-target="s5" data-label="The Substitution" aria-label="Go to The Long Substitution"><span>The Substitution</span></button>
+  <button class="sidenav-dot" type="button" data-target="s6" data-label="The Child" aria-label="Go to The One Born After"><span>The Child</span></button>
+</nav>
+
+<main class="container">
+
+  <header class="hero" id="hero">
+    <div class="hero-eyebrow">The Field · Essay Fifteen</div>
+    <h1>What the<br><em>Burning</em> Took</h1>
+    <div class="hero-line"></div>
+    <p class="hero-subhead">On the elimination of the sensitive world — how a civilization destroyed the roles that received unusual perception, and what became of the people who kept being born to fill them.</p>
+    <div class="hero-meta">
+      <div>sKiDa</div>
+      <div>The Field · Essay Fifteen</div>
+    </div>
+  </header>
+
+  <section id="s1">
+    <div class="section-label">Part One</div>
+    <h2>The Shape of What's Missing</h2>
+
+    <p>The burning did not only take bodies.</p>
+
+    <p>It took roles. It took the social memory of what to do with a person who felt too much, saw too much, noticed too much, or could not pretend not to know what the room already knew.</p>
+
+    <p>We remember the witch trials, when we remember them at all, as a story about cruelty and superstition — a dark chapter, safely closed, belonging to a more ignorant age. We count the dead. We shake our heads at the credulity. We move on.</p>
+
+    <p>But something was destroyed in those centuries that we have never named, because to name it you have to first believe it existed. Not the individuals, though they mattered. What was destroyed was an <em>ecology</em> — a way that human communities had, for most of their history, of receiving people whose nervous systems were built for intensity, pattern, permeability, and perception beyond the ordinary.</p>
+
+    <div class="scene">
+      There have always been people who feel the field before it changes.<br>
+      Who sense what a room is holding before anyone speaks.<br>
+      Who receive too much, too fast, too deep, and cannot turn it off.<br><br>
+      For most of human history, cultures had somewhere to put them.<br>
+      And then, for a few hundred years, we set about destroying the places.
+    </div>
+
+    <p>This essay is about that destruction. Not as a historical curiosity, but as the root — the moment where a wound that runs through everything else in this series was first institutionalized. Where unusual perception was converted, by machinery we can still read on the page, into moral defect, and then into legal category, and then into permission to kill.</p>
+
+    <p>And it is about who kept being born afterward. Because the sensitivity never disappeared. Only the world that knew how to receive it did.</p>
+  </section>
+
+  <section id="s2">
+    <div class="section-label">Part Two</div>
+    <h2>The Document Where It Becomes Visible</h2>
+
+    <p>In 1486, two Dominican inquisitors published a manual. Its title was <em>Malleus Maleficarum</em> — the Hammer of Witches. It became one of the most consequential books of the early modern period: a guidebook for identifying, prosecuting, and destroying the people it called witches.</p>
+
+    <p>What makes the <em>Malleus</em> matter to this argument is not that it was uniquely evil. It is that it is uniquely <em>legible.</em> It shows the machinery working. It converts, in full view, a set of human characteristics into evidence of the diabolical — and it does so with the confidence of men who believed they were performing spiritual hygiene.</p>
+
+    <p>Read what it names as the marks of the witch. Not the crimes. The <em>traits.</em></p>
+
+    <div class="malleus">
+      <div class="malleus-source">Malleus Maleficarum, Part I, Question VI</div>
+      <p>That women are more credulous — and since the chief aim of the devil is to corrupt faith, he therefore attacks them more.</p>
+      <p>That they are naturally more impressionable, and more ready to receive the influence of a disembodied spirit.</p>
+      <p>That the power of the imagination, when it is too unrestrained, can change or seem to change the bodies of others — through a look, through the eyes, through a mere glance that fascinates and attracts.</p>
+      <div class="gloss">The text is describing, in the vocabulary of its era, a specific human profile: heightened permeability, intense affective life, an imagination powerful enough to alter perception, and a sensitivity to invisible forces moving between people. It names these as evidence of consorting with devils. Strip the theology, and what remains is a description of a nervous system.</div>
+    </div>
+
+    <p>The authors were not neutral observers who happened upon a coherent population. That is the overstatement to avoid. They were assembling a persecution category, and they drew its contents from many sources — women who resisted authority, healers and midwives, the socially isolated, the poor, people accused through nothing more than a neighbor's grudge, people whose sexuality unsettled the culture, people onto whom any misfortune could be projected.</p>
+
+    <p>But threaded through the category, again and again, is this figure: the one who perceives too much. The one whose inner life is too intense to stay hidden. The one whose imagination and sensitivity mark them as porous to forces others cannot feel. The <em>Malleus</em> did not invent a neurological type. It built a net — and the net was shaped, among other things, to catch exactly the people whose sensitivity a frightened institution could not metabolize.</p>
+  </section>
+
+  <section id="s3">
+    <div class="section-label">Part Three</div>
+    <h2>The Machine of Conversion</h2>
+
+    <p>What the <em>Malleus</em> formalizes is a mechanism. And the mechanism is not medieval. It recurs. Once you see its shape, you find it running through history under many different names, always performing the same operation.</p>
+
+    <div class="chain">
+      <div class="chain-step">
+        <div class="chain-phase">I</div>
+        <div class="chain-body">A culture loses the ability to hold unusual perception symbolically.
+          <span>The frameworks that once made sense of vision, intensity, and permeability erode. There is no longer a shared language for what these people experience.</span>
+        </div>
+      </div>
+      <div class="chain-step">
+        <div class="chain-phase">II</div>
+        <div class="chain-body">It interprets the perception morally.
+          <span>What cannot be understood symbolically is reassigned to the axis of good and evil. Difference becomes deviance. Sensitivity becomes corruption.</span>
+        </div>
+      </div>
+      <div class="chain-step">
+        <div class="chain-phase">III</div>
+        <div class="chain-body">It interprets the morality juridically.
+          <span>The moral defect is codified. A category is written into law, with procedures, tests, and thresholds of evidence. The person becomes a case.</span>
+        </div>
+      </div>
+      <div class="chain-step">
+        <div class="chain-phase">IV</div>
+        <div class="chain-body">It authorizes punishment.
+          <span>The category, once legal, permits force. Correction. Removal. In the harshest version, the fire. The machine is complete.</span>
+        </div>
+      </div>
+    </div>
+
+    <p>The genius of the <em>Malleus</em> — and it is a dark genius — is that it built the machine as a closed loop. Within it, every outcome confirmed guilt. Denial was evidence of concealment. Composure under accusation was evidence of diabolical protection. Even questioning whether witches existed at all could itself be branded heresy, since to doubt the machine was to obstruct the holy work. The evidentiary protections that governed ordinary crimes were deliberately weakened. There was no move the accused could make that the system could not read as confirmation.</p>
+
+    <div class="pull">
+      <p>A person's own reaction to being caught in the net became further proof that they belonged in it.</p>
+    </div>
+
+    <p>This is the same structure named in earlier essays — the shame machine that runs identical control logic across ideological contexts, the misclassification that collapses a rich signal into a punishing category. The <em>Malleus</em> is where we can watch it being built, in daylight, by men who cited scripture as they did it.</p>
+
+    <p>And it is worth saying plainly what the machine was reaching toward, because the same energy runs beneath everything else this series has traced. The <em>Malleus</em> is obsessed with the body — with lust, with generation, with the carnal. It routes its terror of the sensitive through the sexual almost compulsively, converting perception and intensity into accusations of copulation with devils. Even here, at the root, the pattern holds: intensity that has no legitimate container gets forced into the erotic frame, and then punished there. The inquisitors did to the witch what the culture would later do to everyone — they took a wide spectrum of human intensity and read all of it as sex, and then they called the sex a sin.</p>
+  </section>
+
+  <section id="s4">
+    <div class="section-label">Part Four</div>
+    <h2>What a Role Actually Does</h2>
+
+    <p>To understand what was lost, you have to understand what a role is. Not a job. A <em>social organ.</em></p>
+
+    <p>A role tells a community what to do with a certain kind of perception. It is the structure through which an individual's overwhelming inner experience becomes something the group can use, and through which the individual is given a place, a training, and a purpose for what they carry.</p>
+
+    <div class="roles">
+      <div class="role-row">
+        <div class="role-name">The healer</div>
+        <div class="role-fn">Receives bodily distress — reads it, holds it, works with what the body is saying before the mind can name it.</div>
+      </div>
+      <div class="role-row">
+        <div class="role-name">The mystic</div>
+        <div class="role-fn">Receives symbolic intensity — the flood of meaning too large for ordinary life, given a discipline and a container.</div>
+      </div>
+      <div class="role-row">
+        <div class="role-name">The seer</div>
+        <div class="role-fn">Receives pattern before consensus catches up — perceives what is coming, or what is true beneath what is said.</div>
+      </div>
+      <div class="role-row">
+        <div class="role-name">The grief carrier</div>
+        <div class="role-fn">Receives what the group cannot bear to feel directly — holds the community's sorrow so it can move through.</div>
+      </div>
+      <div class="role-row">
+        <div class="role-name">The ritual keeper</div>
+        <div class="role-fn">Receives transition — the thresholds of birth, death, initiation, and change that the culture must pass through.</div>
+      </div>
+      <div class="role-row">
+        <div class="role-name">The truth-teller</div>
+        <div class="role-fn">Receives contradiction — perceives the gap between what is claimed and what is real, and is permitted to name it.</div>
+      </div>
+    </div>
+
+    <p>Notice what each role provides to the person filling it: an apprenticeship, so the sensitivity becomes discernment rather than flooding. A boundary, so the perception has edges and does not consume the self. A communal vocabulary, so the experience can be shared rather than suffered alone. A protected rhythm, so the person has time to recover from what they receive. And a purpose — a reason the intensity exists that points outward, toward service, rather than inward, toward pathology.</p>
+
+    <p>Remove the roles, and none of the perception stops arriving. The nervous systems keep being born exactly as before. But now the perceptions have nowhere to go. They become <em>privatized burdens.</em></p>
+
+    <div class="pull gold">
+      <p>Sensitivity without teaching becomes flooding. Perception without language becomes confusion. Symbolic intensity without ritual becomes compulsion. Truth-sensing without a protected role becomes alienation.</p>
+    </div>
+
+    <p>This is why the destruction was ecological before it was ever genetic. You do not have to kill a single sensitive person to eliminate the sensitive from a culture. You only have to destroy the roles. Kill the apprenticeship, and the next generation inherits the intensity with no one left to teach them what it is for.</p>
+  </section>
+
+  <section id="s5">
+    <div class="section-label">Part Five</div>
+    <h2>The Long Substitution</h2>
+
+    <p>The burning is not where the story ends. It is where it begins. Because a culture cannot hold an absence open forever — something always moves in to occupy the space where the containers used to be.</p>
+
+    <p>What followed the destruction of the roles was not their restoration. It was a long, slow substitution, each stage narrowing further what counted as legitimate perception, each stage privatizing the burden a little more.</p>
+
+    <div class="ladder">
+      <div class="rung">
+        <div class="rung-was">The village mystic</div>
+        <div class="rung-arrow">→</div>
+        <div class="rung-now">gave way to the monastery — perception permitted only inside the walls, under the authority of the order</div>
+      </div>
+      <div class="rung">
+        <div class="rung-was">The monastery</div>
+        <div class="rung-arrow">→</div>
+        <div class="rung-now">gave way to the asylum — the overwhelmed no longer holy, now confined, now a problem to be housed</div>
+      </div>
+      <div class="rung">
+        <div class="rung-was">The asylum</div>
+        <div class="rung-arrow">→</div>
+        <div class="rung-now">gave way to the clinic — the perception now a symptom, the person now a diagnosis, the intensity now medicated</div>
+      </div>
+      <div class="rung">
+        <div class="rung-was">The clinic</div>
+        <div class="rung-arrow">→</div>
+        <div class="rung-now">gives way to the algorithm — the sensitivity now data, the attention now harvested, the flooding now monetized</div>
+      </div>
+    </div>
+
+    <p>Each step is defensible on its own terms. The clinic is more humane than the asylum. The diagnosis can bring real relief, real accommodation, real self-understanding that the witch category never offered. This essay is not a claim that the past was gentle. The village that had a role for the mystic also had the pyre for the one it turned against. Nothing here is nostalgia.</p>
+
+    <p>But trace the throughline and something becomes undeniable. Across all the substitutions, one direction holds constant: <em>managed</em> steadily replaces <em>received.</em> And they are not the same thing. To be received is to be given a place, a purpose, a people who understand what you carry. To be managed is to be handled — accommodated, medicated, optimized, contained — by a system that has no framework for what your perception might be <em>for.</em></p>
+
+    <p>Modernity, having destroyed the containers, offers fragments in their place. Therapy without initiation. Medication without cosmology. Entertainment without ritual. Diagnosis without belonging. Social platforms without community. And — the thread that ties this essay to everything before it — pornography without sacred polarity, arousal without the symbolic frame that once made intense states meaningful rather than merely consumed.</p>
+
+    <p>These fragments are not worthless. But they are fragments — occupying, in reduced and commercialized form, the spaces that whole containers once held. And here is the cruelty at the center of it: the erotic channel survives as one of the very few places where modern life still openly permits trance, charge, surrender, symbolic polarity, ritual repetition, and the temporary dissolution of the bounded self. So of course the uncontained intensity collects there. Not because the sensitivity was ever sexual. Because the culture closed every other gate, left that one open for profit, and then shamed people for walking through it.</p>
+
+    <div class="pull">
+      <p>The culture destroys the sacred containers, commercializes the remaining gateways, and then condemns people for entering through them.</p>
+    </div>
+  </section>
+
+  <section id="s6">
+    <div class="section-label">Part Six</div>
+    <h2>The One Born After</h2>
+
+    <p>Somewhere right now there is a child who feels everything.</p>
+
+    <p>Who is flooded by sound, by light, by the emotional weather of every room they enter. Who perceives patterns no one taught them to see. Who cannot pretend not to notice the gap between what people say and what is true. Who receives at an intensity that has no off switch, and who is already learning that this makes them a problem.</p>
+
+    <p>That child is not a reincarnated witch. That framing would narrow the truth into mysticism and lose it. The child is something simpler and sadder: a person born <em>after</em> the ecology is gone. Carrying the sensitivity, with no one left to teach them what it is for.</p>
+
+    <p>We have a word for that child now. Several words. Autistic. Highly sensitive. Neurodivergent. Dysregulated. The words can be a genuine mercy — they can bring recognition, accommodation, community, and the profound relief of finding out you were never broken, only different. That mercy is real and this essay does not diminish it.</p>
+
+    <p>But look at the deeper institutional reflex beneath even the kindest modern language. The diagnostic frame still, at bottom, performs the same operation the <em>Malleus</em> performed: it defines the majority's mode of perception as reality itself, and then locates every mismatch inside the minority nervous system. The vocabulary has changed almost beyond recognition. Spiritual permeability became poor sensory filtering. Vision became hallucination. Ritual absorption became restricted behavior. The refusal of social falsity became a deficit in reciprocity. Withdrawal for integration became impairment. But the structure underneath — <em>the perception is the problem, and the problem is in you</em> — has proven remarkably durable.</p>
+
+    <p>What the child is missing is not a diagnosis. They have never been better supplied with those. What the child is missing is the thing the burning took: a role. An apprenticeship in their own perception. A protected rhythm. A communal vocabulary. A people who look at what they carry and say not <em>here is what is wrong with you</em> but <em>here is what you are for.</em></p>
+
+    <div class="inventory">
+      It took the village's permission to perceive differently.<br>
+      <span>It took the names for subtle experience.</span><br>
+      It took the apprenticeship of the sensitive.<br>
+      <span>It took the difference between vision and delusion, discernment and projection, ritual and compulsion.</span><br>
+      It took the role that turned overwhelm into service.<br>
+      <span>It took the ecology that let intensity become wisdom.</span>
+    </div>
+
+    <p>This is the root beneath every other essay in this series. The misclassification wound, the shame machine, the sacred hunger redirected into compulsion, the sensitive man punished for what was taken from him, the broken heart of desire — they are all downstream of this. They are all what happens to field-sensitive people in a world that eliminated the containers for field sensitivity, and then went looking for somewhere to put the intensity that had nowhere left to go.</p>
+
+    <div class="invocation">
+      The sensitivity was never the affliction.<br>
+      The affliction was <em>being born</em><br>
+      into a world that had burned<br>
+      every place you could have belonged.
+    </div>
+
+    <p>The work now is not to romanticize a past that was also cruel. It is to understand that the intensity keeps arriving — in every generation, in every one of these children — and that we have spent five hundred years getting better at managing it and no better at all at receiving it.</p>
+
+    <p>The roles can be rebuilt. Not as superstition. As ecology. As the deliberate, conscious reconstruction of what a community does with a person who feels too much. The healer, the seer, the grief carrier, the pattern reader — under whatever names a future culture chooses — are not relics. They are functions a whole society still needs, being performed badly or not at all because we forgot they were ever functions at all.</p>
+
+    <div class="closing">
+      The fire went out centuries ago.<br>
+      But the world it cleared is still empty.<br><br>
+      <em>The sensitive never disappeared.</em><br>
+      Only the world that knew how to receive them did.
+    </div>
+
+    <div class="related">
+      <div class="related-label">The Wound This Essay Roots</div>
+      <a href="https://skidaggabatee.github.io/essay/the_broken_heart_of_desire.html">The Broken Heart of Desire &rarr;</a>
+      <div class="related-desc">On what happens when the symbolic containers collapse and the entire weight of the human interior is forced through the one channel still left open — the essay this one reaches back to explain.</div>
+    </div>
+
+    <div class="footer">
+      <p><em>What the Burning Took</em> by sKiDa</p>
+      <p style="opacity: 0.6; font-size: 0.92em;">The Field &middot; Essay Fifteen &middot; BloomNode // SACS // &Delta;HV Field Archive</p>
+      <p class="note">This essay does not claim the witch was secretly the autistic, nor that the past was kind. It traces how a civilization destroyed the ecosystems that once recognized, trained, and protected unusual perception — and what became of the sensitive who kept being born into the absence.</p>
+    </div>
+  </section>
+
+</main>
+
+<noscript><style>section{opacity:1;transform:none}.sidenav{display:none}</style></noscript>
+<script>
+  window.addEventListener('scroll', () => {
+    const h = document.documentElement;
+    const maxScroll = Math.max(1, h.scrollHeight - h.clientHeight);
+    const pct = (h.scrollTop / maxScroll) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+  }, { passive: true });
+
+  const nav = document.getElementById('sidenav');
+  const dots = document.querySelectorAll('.sidenav-dot');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('show', window.scrollY > 500);
+    const sections = document.querySelectorAll('section[id], header[id]');
+    let current = '';
+    sections.forEach(s => {
+      if (window.scrollY >= s.offsetTop - 250) current = s.id;
+    });
+    dots.forEach(d => {
+      const active = d.getAttribute('data-target') === current;
+      d.classList.toggle('active', active);
+      d.setAttribute('aria-current', active ? 'location' : 'false');
+    });
+  }, { passive: true });
+  dots.forEach(d => {
+    d.addEventListener('click', () => {
+      const target = document.getElementById(d.getAttribute('data-target'));
+      if (target) target.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  if (!('IntersectionObserver' in window)) {
+    document.querySelectorAll('section').forEach(s => s.classList.add('visible'));
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.04 });
+  document.querySelectorAll('section').forEach(s => observer.observe(s));
+  setTimeout(() => document.querySelectorAll('section').forEach(s => s.classList.add('visible')), 1800);
+</script>
+
+</body>
+</html>
