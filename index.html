@@ -261,6 +261,160 @@
     transition: transform 0.25s;
   }
 
+  /* ─── TRILOGY CARD ─── */
+  .trilogy-card {
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    position: relative;
+  }
+
+  .trilogy-card::after {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent, #c9a878);
+    opacity: 0.9;
+  }
+
+  .tc-header {
+    padding: 22px 32px 20px;
+    border-bottom: 0.5px solid var(--border);
+  }
+
+  .tc-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.6em;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent, #c9a878);
+    margin-bottom: 8px;
+  }
+
+  .tc-eyebrow::before {
+    content: '';
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--accent, #c9a878);
+  }
+
+  .tc-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.25em;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    letter-spacing: -0.005em;
+    margin-bottom: 8px;
+  }
+  .tc-title em {
+    font-style: italic;
+    color: var(--accent, #c9a878);
+  }
+
+  .tc-intro {
+    font-size: 0.78em;
+    color: var(--text-soft);
+    line-height: 1.55;
+    max-width: 620px;
+  }
+
+  .tc-essays {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tc-essay {
+    display: grid;
+    grid-template-columns: 28px 1fr 20px;
+    gap: 20px;
+    align-items: start;
+    padding: 14px 32px;
+    text-decoration: none;
+    color: inherit;
+    border-bottom: 0.5px solid var(--border);
+    transition: background 0.25s;
+  }
+
+  .tc-essay:last-child { border-bottom: none; }
+
+  .tc-essay:hover {
+    background: rgba(201, 168, 120, 0.035);
+  }
+
+  .tc-essay:hover .tc-e-arrow { transform: translateX(4px); }
+
+  .tc-num {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1em;
+    font-style: italic;
+    color: var(--accent, #c9a878);
+    opacity: 0.55;
+    text-align: center;
+    letter-spacing: 0.05em;
+    padding-top: 2px;
+  }
+
+  .tc-body {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .tc-heading {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .tc-tag {
+    font-size: 0.58em;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .tc-e-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 0.98em;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--text);
+    letter-spacing: -0.005em;
+  }
+  .tc-e-title em {
+    font-style: italic;
+    color: var(--accent, #c9a878);
+  }
+
+  .tc-desc {
+    font-size: 0.76em;
+    color: var(--text-soft);
+    line-height: 1.55;
+    opacity: 0.85;
+  }
+
+  .tc-e-arrow {
+    font-size: 0.9em;
+    color: var(--text-soft);
+    text-align: right;
+    transition: transform 0.25s;
+    padding-top: 3px;
+  }
+
+  @media (max-width: 720px) {
+    .tc-header { padding: 18px 20px 16px; }
+    .tc-essay { grid-template-columns: 22px 1fr 18px; gap: 14px; padding: 13px 20px; }
+    .tc-heading { gap: 6px; flex-direction: column; align-items: flex-start; }
+  }
+
   /* ─── GRID ─── */
   .grid {
     display: grid;
@@ -456,23 +610,54 @@ Eventually I stopped trying to become someone the world could understand and tur
   </div>
 
   <!-- FEATURED -->
-  <div class="featured-label fade-in delay-1">Latest essay</div>
+  <div class="featured-label fade-in delay-1">Newly complete · A trilogy</div>
 
-  <a class="featured-card fade-in delay-2" style="--accent: #d4a86b;" href="https://skidaggabatee.github.io/essay/drink_me.html">
-    <div class="fc-left">
-      <div class="fc-new"><div class="fc-new-dot"></div> New</div>
-      <div class="fc-tag">Phase Physics · Literary Reading · Sovereign Perception</div>
-      <div class="fc-title"><em>Drink Me:</em> Alice in Wonderland as Phase Physics</div>
-      <p class="fc-desc">A reading of Carroll's two Alice books as a phase physics primer disguised as children's literature — written by a Victorian mathematician who understood classical reality was incomplete and could not say so in scientific discourse. The potion and the cake are not size-changing substances. They are state-transition operators. The rest of the book is what happens when a perceiver learns to move through the field with authority.</p>
+  <div class="trilogy-card fade-in delay-2" style="--accent: #c9a878;">
+    <div class="tc-header">
+      <div class="tc-eyebrow">The Dodgson Trilogy</div>
+      <div class="tc-title">Charles Dodgson, <em>Recognized</em></div>
+      <p class="tc-intro">Three essays reading Lewis Carroll as one perceiver whose attention could not release the class of phenomena that surfaces at the edge of any frame — at the level he was operating, across the domains where he could only speak sideways, and finally as a map of what he could not stop looking at.</p>
     </div>
-    <div class="fc-right">
-      <div class="fc-quote">"The vessel does not shift itself by willpower. The vessel shifts by receiving what carries the shift. Effort is the wrong instrument. Reception is the right one."</div>
-      <div class="fc-footer">
-        <span class="fc-meta">Essay Twenty · Long read</span>
-        <span class="fc-arrow">→</span>
-      </div>
+    <div class="tc-essays">
+
+      <a class="tc-essay" href="https://skidaggabatee.github.io/essay/drink_me.html">
+        <div class="tc-num">I</div>
+        <div class="tc-body">
+          <div class="tc-heading">
+            <div class="tc-tag">Essay 20</div>
+            <div class="tc-e-title"><em>Drink Me:</em> Alice in Wonderland as Phase Physics</div>
+          </div>
+          <p class="tc-desc">The Alice books read as a phase physics primer disguised as children's literature. The potion and the cake are not size-changing substances. They are state-transition operators.</p>
+        </div>
+        <div class="tc-e-arrow">→</div>
+      </a>
+
+      <a class="tc-essay" href="https://skidaggabatee.github.io/essay/the_man_inside_the_machine.html">
+        <div class="tc-num">II</div>
+        <div class="tc-body">
+          <div class="tc-heading">
+            <div class="tc-tag">Essay 21</div>
+            <div class="tc-e-title">The Man Inside the <em>Machine</em></div>
+          </div>
+          <p class="tc-desc">The same topology surfaces across six of Dodgson's independent professional domains. Alice is not where he hid his mathematical imagination. Alice is where his different modes of inquiry finally became one language.</p>
+        </div>
+        <div class="tc-e-arrow">→</div>
+      </a>
+
+      <a class="tc-essay" href="https://skidaggabatee.github.io/essay/a_map_of_dodgsons_attention.html">
+        <div class="tc-num">III</div>
+        <div class="tc-body">
+          <div class="tc-heading">
+            <div class="tc-tag">Essay 22</div>
+            <div class="tc-e-title">A Map of Dodgson's <em>Attention</em></div>
+          </div>
+          <p class="tc-desc">Belief is easy to fake. Attention is not. A walk through the boundary phenomena his reception would not release, in every domain his professional life allowed him to record them.</p>
+        </div>
+        <div class="tc-e-arrow">→</div>
+      </a>
+
     </div>
-  </a>
+  </div>
 
   <!-- GRID -->
   <div class="grid">
@@ -674,7 +859,7 @@ Eventually I stopped trying to become someone the world could understand and tur
     <div class="footer-left">sKiDa · The Field</div>
     <div class="footer-count">
       <div class="fc-stat">
-        <span class="fc-stat-num">20</span>
+        <span class="fc-stat-num">22</span>
         <span class="fc-stat-label">Essays</span>
       </div>
    
