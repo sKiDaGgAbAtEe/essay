@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Creative's Block: It's Not a Wall, It's a Blindfold</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Source+Serif+4:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #09090f;
+    --surface: #0e0e1a;
+    --card: #131320;
+    --border: rgba(180, 130, 90, 0.15);
+    --amber: #c8803a;
+    --amber-soft: rgba(200, 128, 58, 0.10);
+    --violet: #8c78dc;
+    --violet-soft: rgba(140, 120, 220, 0.09);
+    --gold: #c8a05a;
+    --gold-soft: rgba(200, 160, 90, 0.08);
+    --ash: #7a7a9a;
+    --text: #dcdcf0;
+    --text-soft: #8888aa;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Source Serif 4', Georgia, serif;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 19px;
+    line-height: 1.9;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.5;
+  }
+
+  .progress {
+    position: fixed; top: 0; left: 0; height: 2px;
+    width: 0%; background: linear-gradient(90deg, var(--amber), var(--violet));
+    z-index: 1000; transition: width 0.1s linear;
+  }
+
+  .sidenav {
+    position: fixed; right: 28px; top: 50%; transform: translateY(-50%);
+    display: flex; flex-direction: column; gap: 10px; z-index: 200;
+    opacity: 0; transition: opacity 0.5s;
+  }
+  .sidenav.show { opacity: 1; }
+  .sidenav-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--border); border: 1px solid var(--amber);
+    cursor: pointer; transition: all 0.3s; position: relative;
+  }
+  .sidenav-dot.active { background: var(--amber); border-color: var(--amber); transform: scale(1.4); }
+  .sidenav-dot:hover::after {
+    content: attr(data-label);
+    position: absolute; right: 16px; top: 50%; transform: translateY(-50%);
+    white-space: nowrap; font-family: 'Source Serif 4', serif;
+    font-size: 11px; color: var(--amber); opacity: 0.9;
+    pointer-events: none;
+  }
+
+  .container {
+    position: relative; z-index: 1;
+    max-width: 760px; margin: 0 auto;
+    padding: 0 40px 140px;
+  }
+
+  .hero {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    justify-content: center; align-items: flex-start;
+    padding: 80px 0 60px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .hero-eyebrow {
+    font-family: 'Source Serif 4', serif;
+    font-size: 0.75em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 32px;
+    opacity: 0.9;
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(2.4em, 6vw, 4.2em);
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--text);
+    margin-bottom: 20px;
+    letter-spacing: -0.01em;
+  }
+
+  .hero-subtitle {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.1em, 2.5vw, 1.5em);
+    font-weight: 400;
+    font-style: italic;
+    color: var(--amber);
+    margin-bottom: 36px;
+    letter-spacing: 0.01em;
+    opacity: 0.85;
+  }
+
+  .hero-subhead {
+    font-size: 1.05em;
+    color: var(--text-soft);
+    max-width: 580px;
+    line-height: 1.75;
+    font-style: italic;
+    margin-bottom: 50px;
+  }
+
+  .hero-line {
+    width: 80px; height: 1px;
+    background: linear-gradient(90deg, var(--amber), transparent);
+    margin-bottom: 30px;
+  }
+
+  .hero-author {
+    font-size: 0.82em;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ash);
+  }
+
+  section {
+    padding: 90px 0 30px;
+    border-bottom: 1px solid var(--border);
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  section.visible { opacity: 1; transform: none; }
+
+  .section-label {
+    font-size: 0.72em;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 12px;
+    font-family: 'Source Serif 4', serif;
+  }
+
+  h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.8em, 4vw, 2.5em);
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--text);
+    margin-bottom: 36px;
+    letter-spacing: -0.01em;
+  }
+
+  h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.3em;
+    font-weight: 400;
+    font-style: italic;
+    color: var(--violet);
+    margin-top: 52px;
+    margin-bottom: 20px;
+  }
+
+  p { margin-bottom: 22px; color: var(--text); }
+  strong { color: var(--amber); font-weight: 600; }
+
+  .pull {
+    border-left: 3px solid var(--amber);
+    margin: 44px 0;
+    padding: 20px 30px;
+    background: var(--amber-soft);
+    border-radius: 0 6px 6px 0;
+  }
+  .pull p {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.2em;
+    font-style: italic;
+    line-height: 1.65;
+    color: var(--text);
+    margin: 0;
+  }
+
+  .pull.violet {
+    border-left-color: var(--violet);
+    background: var(--violet-soft);
+  }
+
+  .closing-block {
+    margin: 60px 0 0;
+    padding: 48px 40px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+  .closing-block p {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.15em;
+    font-style: italic;
+    line-height: 1.7;
+    color: var(--text-soft);
+    margin-bottom: 18px;
+  }
+  .closing-block p:last-child { margin-bottom: 0; }
+
+  .footer {
+    margin-top: 120px;
+    padding-top: 40px;
+    border-top: 1px solid var(--border);
+    text-align: center;
+    font-size: 0.78em;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ash);
+    opacity: 0.5;
+  }
+
+  .back-button {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 16px;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    text-decoration: none;
+    color: var(--amber);
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--amber);
+    border-radius: 6px;
+    font-family: 'Source Serif 4', serif;
+    z-index: 9999;
+    backdrop-filter: blur(6px);
+    white-space: nowrap;
+  }
+  .back-button:hover { background: rgba(200, 128, 58, 0.15); }
+
+  @media (max-width: 700px) {
+    .container { padding: 0 24px 100px; }
+    .sidenav { display: none; }
+    .hero { padding: 60px 0 40px; }
+    .closing-block { padding: 32px 24px; }
+  }
+</style>
+</head>
+<body>
+
+<a href="./index.html" class="back-button">← Back</a>
+<div class="progress" id="progressBar"></div>
+
+<nav class="sidenav" id="sidenav">
+  <div class="sidenav-dot" data-target="s1" data-label="The Misidentification"></div>
+  <div class="sidenav-dot" data-target="s2" data-label="The Loop"></div>
+  <div class="sidenav-dot" data-target="s3" data-label="The Shift"></div>
+  <div class="sidenav-dot" data-target="s4" data-label="What Moves Through You"></div>
+</nav>
+
+<div class="container">
+
+  <div class="hero" id="hero">
+    <div class="hero-eyebrow">On Creativity, Alignment, and the Place You Get Stuck</div>
+    <h1>The Creative's Block</h1>
+    <div class="hero-subtitle">It's not a wall. It's a blindfold.</div>
+    <div class="hero-subhead">
+      You're not empty. You never were. But something shifted in the way you understood where the work was supposed to come from — and that misunderstanding is what's draining you.
+    </div>
+    <div class="hero-line"></div>
+    <div class="hero-author">sKiDa</div>
+  </div>
+
+  <!-- SECTION 1 -->
+  <section id="s1">
+    <div class="section-label">Part One</div>
+    <h2>The Misidentification</h2>
+
+    <p>At some point — and it usually happens quietly, without announcement — a creative person starts to believe something that sounds reasonable but isn't true.</p>
+
+    <p>They start to believe that they are the source.</p>
+
+    <p>That the music, the writing, the art, the voice — all of it — is coming <em>from them</em>. Generated by them. Dependent on them. Which means when the well feels low, the only logical conclusion is that something in them has gone wrong. They must be less inspired. Less talented than they thought. Less interesting than they used to be. The world has heard everything they have to say, and now there is nothing left.</p>
+
+    <p>This is the misidentification. And it is doing enormous damage.</p>
+
+    <div class="pull">
+      <p>The creative block is not the absence of something inside you. It is what happens when you have been trying to generate from a source that was never yours to generate from in the first place.</p>
+    </div>
+
+    <p>There is a difference between being a fountain and being a channel. A fountain recirculates its own water — it has a finite reserve, and if you run it long enough without replenishment, eventually it runs dry. A channel doesn't carry its own water. It carries whatever is moving through it. The channel doesn't have to generate anything. It only has to remain open.</p>
+
+    <p>Most creative people in a block have not lost their gift. They have mistaken themselves for a fountain when they are actually a channel — and they have been pumping themselves dry trying to produce from a reserve that doesn't refill on demand.</p>
+
+    <p>That is an exhausting way to live. And eventually, bitterness is where you end up when you're exhausted and can't figure out why.</p>
+
+  </section>
+
+  <!-- SECTION 2 -->
+  <section id="s2">
+    <div class="section-label">Part Two</div>
+    <h2>The Loop</h2>
+
+    <p>Here is how the loop goes, once the misidentification is in place.</p>
+
+    <p>You sit down to create. Nothing comes — or what comes feels wrong, flat, forced. You push harder, because the logic is: if I am the source, then effort should produce output. So you push. You produce something. You look at it. It doesn't feel like <em>you</em> — not the real you, not the you that made the thing everyone responded to. So you conclude you're declining.</p>
+
+    <p>You start comparing. Old work. Other people's work. The version of yourself from before everything felt difficult. Each comparison is measuring you against a standard you can no longer locate — and the measuring itself is the problem, because it turns the creative act into a performance review rather than a transmission.</p>
+
+    <div class="pull violet">
+      <p>Creativity cannot coexist with self-surveillance. The moment you split into creator and critic simultaneously, the signal drops. Not because you aren't talented. Because you are now listening for the thing while also asking whether you're hearing it correctly — and those two operations cancel each other out.</p>
+    </div>
+
+    <p>So you wait. Waiting for inspiration to return, as though inspiration is weather that comes when it wants to. Some days something moves. Most days it doesn't. And on the days it doesn't, you take that as further evidence of the decline you've already diagnosed.</p>
+
+    <p>Eventually you stop putting yourself in the position to create at all. Not always consciously. You're just — busy. Tired. Not feeling it. Maybe later. The gap between you and the work keeps widening, and the wider it gets, the more intimidating it becomes to close it.</p>
+
+    <p>And underneath all of it, quietly, something else is happening. The creative energy doesn't disappear. It has nowhere to go. It starts converting — into irritability, distance, contempt for things that used to delight you. You find yourself increasingly uninterested in the world, or increasingly bitter toward it. Other people's work bothers you more than it should. Small things feel disproportionately heavy.</p>
+
+    <p>That is not personality. That is blocked energy looking for an exit.</p>
+
+  </section>
+
+  <!-- SECTION 3 -->
+  <section id="s3">
+    <div class="section-label">Part Three</div>
+    <h2>The Shift</h2>
+
+    <p>The way out is not more effort. It is not more discipline or more pushing or more comparison or more time spent analyzing what went wrong.</p>
+
+    <p>The way out is a different understanding of what you are doing when you create.</p>
+
+    <p>You are not a generator. You are a receiver. A translator. Something is always trying to move — through you specifically, in the particular form your particular perception and skill and experience make possible. Your job is not to produce it. Your job is to be available to it.</p>
+
+    <p>This is not mysticism. You don't have to believe in anything metaphysical for this to be practically true. Call it inspiration, call it flow state, call it unconscious processing — the language doesn't matter. What matters is that every creative person who has ever described the experience of doing their best work has described the same thing: it felt like something was moving <em>through</em> them, not being forced <em>out of</em> them.</p>
+
+    <div class="pull">
+      <p>The works you made that reached people — you didn't manufacture those. You caught them. You were in the right position, at the right level of openness, and something passed through you into form. The gift was real. The misunderstanding is about where it originated.</p>
+    </div>
+
+    <p>This shift in understanding changes what the block actually is. It is not evidence of your decline. It is evidence that your position has changed — that something in you has closed, or gotten too loud, or gotten between the signal and the output. The block is not about absence. It is about interference.</p>
+
+    <p>And interference can be cleared. Not by trying harder. By getting quieter. By reducing the noise — the comparison, the self-monitoring, the pressure, the accumulated disappointment you've been treating as data about your worth.</p>
+
+    <p>None of that is the truth about you. It is the static. And the signal is still there, underneath it, waiting for you to stop competing with it long enough to let it through.</p>
+
+  </section>
+
+  <!-- SECTION 4 -->
+  <section id="s4">
+    <div class="section-label">Part Four</div>
+    <h2>What Moves Through You</h2>
+
+    <p>There is something worth naming about the creative energy that gets blocked.</p>
+
+    <p>It does not go away. It does not expire. It does not lose interest in you just because you have lost access to it. Whatever quality in you allows the work to move through — the sensitivity, the perception, the capacity to feel things at the register where art lives — that does not diminish because you stopped creating for a while. It is not a muscle that atrophies. It is more like a frequency. You don't lose the frequency. You lose the tuning.</p>
+
+    <p>Which means re-entry is possible. It does not require you to rebuild from zero. It does not require you to rediscover your talent. It requires you to locate the interference — honestly, without judgment — and begin reducing it.</p>
+
+    <p>Sometimes that means doing small creative acts with zero stakes. Not for an audience, not for a portfolio. For the practice of being in the act of creating again without measuring it. The point is not the output. The point is re-establishing the feeling of what it is to be a channel — open, receiving, not performing.</p>
+
+    <p>Sometimes it means rest. Genuine rest, not waiting-while-guilty. The channel needs to be filled before it can carry anything. Input before output. Experience, beauty, silence, solitude, the things that replenish rather than deplete.</p>
+
+    <p>Sometimes it means being honest about what the bitterness is carrying — because bitterness is usually anger about something real. A disappointment that wasn't processed. An expectation that wasn't met. A loss that got skipped over on the way to the next thing. The creative energy and the emotional energy are not separate systems. When one is blocked, the other often is too.</p>
+
+    <div class="pull violet">
+      <p>You are not dried up. You are not finished. You are not the exception to the rule — the one person for whom the creative impulse simply stopped. You are in a position that many artists move through and mistake for a permanent verdict when it is actually a temporary condition.</p>
+    </div>
+
+    <p>The blindfold is the belief that the wall is real.</p>
+
+    <p>Take it off. The way is still there.</p>
+
+    <div class="closing-block">
+      <p>If you are in this place right now — distant from your own work, bitter at something you can't name, waiting for an inspiration that stopped arriving — know that what you are describing is a misalignment, not a loss.</p>
+      <p>You have not run out. You have been trying to run from the wrong end.</p>
+      <p>The work is not inside you waiting to be extracted. It is moving toward you, the way it always has — and it will find you again the moment you stop trying to generate it and simply make yourself available to receive it.</p>
+    </div>
+
+  </section>
+
+  <div class="footer">BloomNode // SACS // ΔHV Field Archive</div>
+
+</div>
+
+<script>
+  // Progress bar
+  const progressBar = document.getElementById('progressBar');
+  window.addEventListener('scroll', () => {
+    const total = document.body.scrollHeight - window.innerHeight;
+    progressBar.style.width = (window.scrollY / total * 100) + '%';
+  });
+
+  // Scroll reveal
+  const sections = document.querySelectorAll('section');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+  }, { threshold: 0.08 });
+  sections.forEach(s => observer.observe(s));
+
+  // Sidenav
+  const sidenav = document.getElementById('sidenav');
+  const dots = document.querySelectorAll('.sidenav-dot');
+  dots.forEach(dot => {
+    dot.addEventListener('click', () => {
+      document.getElementById(dot.dataset.target)?.scrollIntoView({ behavior: 'smooth' });
+    });
+  });
+
+  window.addEventListener('scroll', () => {
+    sidenav.classList.toggle('show', window.scrollY > 300);
+    let current = '';
+    sections.forEach(s => { if (window.scrollY >= s.offsetTop - 200) current = s.id; });
+    dots.forEach(d => d.classList.toggle('active', d.dataset.target === current));
+  });
+</script>
+</body>
+</html>
